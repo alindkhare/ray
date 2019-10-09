@@ -95,7 +95,7 @@ class HTTPProxy:
             body += message.get('body', b'')
             more_body = message.get('more_body', False)
 
-        return body
+        return json.load(body)
 
     async def __call__(self, scope, receive, send):
         # NOTE: This implements ASGI protocol specified in
@@ -147,6 +147,7 @@ class HTTPProxy:
 
             elif scope['method'] == 'POST':
                 body = await self.read_body(receive)
+                body['data'].append(111)
                 await JSONResponse({"result": body})(scope, receive, send)
         else:
             error_message = ("Path {} not found. "
