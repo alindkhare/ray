@@ -87,15 +87,16 @@ class HTTPProxy:
         """
         Read and return the entire body from an incoming ASGI message.
         """
-        body = b''
-        more_body = True
+        # body = b''
+        # more_body = True
 
-        while more_body:
-            message = await receive()
-            body += message.get('body', b'')
-            more_body = message.get('more_body', False)
+        # while more_body:
+        
+        message = await receive()
+            # body += message.get('body', b'')
+            # more_body = message.get('more_body', False)
 
-        return body
+        return message
 
     async def __call__(self, scope, receive, send):
         # NOTE: This implements ASGI protocol specified in
@@ -144,7 +145,7 @@ class HTTPProxy:
                     })(scope, receive, send)
                 else:
                     await JSONResponse({"result": result})(scope, receive, send)
-                    
+
             elif scope['method'] == 'POST':
                 body = await self.read_body(receive)
                 await JSONResponse({"result": body})(scope, receive, send)
