@@ -52,7 +52,7 @@ serve.add_service_dependencies("pipeline1","serve1","serve2")
 # serve3 depends on serve2
 serve.add_service_dependencies("pipeline1","serve2","serve3")
 
-# Provision the PIPELINE (You can provision the service only once)
+# Provision the PIPELINE (You can provision the pipeline only once)
 serve.provision_pipeline("pipeline1")
 
 # You can only create an endpoint for pipeline after provisioning the pipeline
