@@ -182,7 +182,7 @@ class KVPipelineProxy:
                 raise Exception('Add service dependencies to pipeline')
         except Exception:
             traceback_str = ray.utils.format_error_message(traceback.format_exc())
-            return ray.exceptions.RayTaskError(str(provision), traceback_str)
+            return ray.exceptions.RayTaskError('Issue with provisioning pipeline', traceback_str)
 
 
     def list_pipeline_service(self):
