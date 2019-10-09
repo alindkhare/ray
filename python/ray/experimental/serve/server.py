@@ -83,6 +83,19 @@ class HTTPProxy:
                 return
 
             await asyncio.sleep(interval)
+    async def read_body(self,receive):
+        """
+        Read and return the entire body from an incoming ASGI message.
+        """
+        body = b''
+        more_body = True
+
+        while more_body:
+            message = await receive()
+            body += message.get('body', b'')
+            more_body = message.get('more_body', False)
+
+        return body
 
     async def __call__(self, scope, receive, send):
         # NOTE: This implements ASGI protocol specified in
@@ -98,38 +111,43 @@ class HTTPProxy:
         if current_path == "/":
             await JSONResponse(self.route_table)(scope, receive, send)
         elif current_path in self.route_table:
-            pipeline_name = self.route_table[current_path]
-            service_dependencies = self.pipeline_table[pipeline_name]
-            # await JSONResponse({"result": str(services_list)})(scope, receive, send)
-            result = scope
-            # for service in services_list:
-            #     result_object_id_bytes = await as_future(
-            #         self.router.enqueue_request.remote(service, result))
-            #     result = await as_future(ray.ObjectID(result_object_id_bytes))
-            data_d = defaultdict(dict)
+            if scope['method'] == 'GET' :
+                pipeline_name = self.route_table[current_path]
+                service_dependencies = self.pipeline_table[pipeline_name]
+                # await JSONResponse({"result": str(services_list)})(scope, receive, send)
+                result = scope
+                # for service in services_list:
+                #     result_object_id_bytes = await as_future(
+                #         self.router.enqueue_request.remote(service, result))
+                #     result = await as_future(ray.ObjectID(result_object_id_bytes))
+                data_d = defaultdict(dict)
 
-            for node in service_dependencies['node_order']:
-                data_sent = None
-                if data_d[node] == {}:
-                    data_sent = scope
+                for node in service_dependencies['node_order']:
+                    data_sent = None
+                    if data_d[node] == {}:
+                        data_sent = scope
+                    else:
+                        data_sent = data_d[node]
+                    result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
+                    node_result = await as_future(ray.ObjectID(result_object_id_bytes))
+                    if service_dependencies['successors'][node] == []:
+                        result = node_result
+                        break
+                    else:
+                        for node_successor in service_dependencies['successors'][node]:
+                            data_d[node_successor][node] = node_result 
+
+
+                if isinstance(result, ray.exceptions.RayTaskError):
+                    await JSONResponse({
+                        "error": "internal error, please use python API to debug"
+                    })(scope, receive, send)
                 else:
-                    data_sent = data_d[node]
-                result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
-                node_result = await as_future(ray.ObjectID(result_object_id_bytes))
-                if service_dependencies['successors'][node] == []:
-                    result = node_result
-                    break
-                else:
-                    for node_successor in service_dependencies['successors'][node]:
-                        data_d[node_successor][node] = node_result 
-
-
-            if isinstance(result, ray.exceptions.RayTaskError):
-                await JSONResponse({
-                    "error": "internal error, please use python API to debug"
-                })(scope, receive, send)
-            else:
-                await JSONResponse({"result": result})(scope, receive, send)
+                    await JSONResponse({"result": result})(scope, receive, send)
+                    
+            elif scope['method'] == 'POST':
+                body = await self.read_body(receive)
+                await JSONResponse({"result": body})(scope, receive, send)
         else:
             error_message = ("Path {} not found. "
                              "Please ping http://.../ for routing table"
