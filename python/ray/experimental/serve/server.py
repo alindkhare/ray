@@ -107,6 +107,7 @@ class HTTPProxy:
             #         self.router.enqueue_request.remote(service, result))
             #     result = await as_future(ray.ObjectID(result_object_id_bytes))
             data_d = defaultdict(dict)
+
             for node in service_dependencies['node_order']:
                 data_sent = None
                 if data_d[node] == {}:
@@ -115,8 +116,12 @@ class HTTPProxy:
                     data_sent = data_d[node]
                 result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
                 node_result = await as_future(ray.ObjectID(result_object_id_bytes))
-                for node_successor in service_dependencies['successors'][node]:
-                    data_d[node_successor][node] = node_result 
+                if service_dependencies['successors'][node] == []:
+                    result = node_result
+                    break
+                else:
+                    for node_successor in service_dependencies['successors'][node]:
+                        data_d[node_successor][node] = node_result 
 
 
             if isinstance(result, ray.exceptions.RayTaskError):
