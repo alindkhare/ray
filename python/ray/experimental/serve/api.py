@@ -134,7 +134,7 @@ def link_service(service_name, backend_tag):
     >>> serve.split("service-name", {"backend:v1": 1.0})
     """
     assert service_name in global_state.registered_services
-    assert backend in global_state.registered_backends
+    assert backend_tag in global_state.registered_backends
 
     global_state.router_actor_handle.link.remote(service_name, backend_tag)
     global_state.policy_action_history[service_name].append({backend_tag: 1})
