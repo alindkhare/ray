@@ -104,7 +104,7 @@ def create_backend(func_or_class, backend_tag, *actor_init_args):
 def add_service_dependencies(pipeline_name,service_name_1,service_name_2,blocking=True):
     assert service_name_1 in global_state.registered_services
     assert service_name_2 in global_state.registered_services
-    assert pipeline_name not in provisioned_services
+    assert pipeline_name not in global_state.provisioned_services
 
     future = global_state.kv_store_actor_handle_pipeline.add_edge.remote(pipeline_name,service_name_1,service_name_2)
     if blocking:
