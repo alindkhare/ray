@@ -67,7 +67,7 @@ serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 time.sleep(2)
 
 data = {'data':[1,2,3,6], 'model': 'resnet'}
-sent_data = json.dumps(content, cls=BytesEncoder, indent=2).encode()
+sent_data = json.dumps(data, cls=BytesEncoder, indent=2).encode()
 while True:
     resp = requests.post("http://127.0.0.1:8000/echo",data = sent_data).json()
     print(pformat_color_json(resp))
