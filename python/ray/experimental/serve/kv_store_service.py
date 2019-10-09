@@ -5,6 +5,10 @@ import ray
 import ray.experimental.internal_kv as ray_kv
 from ray.experimental.serve.utils import logger
 
+# Pipeline will store a DAG of services
+import networkx as nx
+from networkx.readwrite import json_graph
+import traceback
 
 class NamespacedKVStore(ABC):
     """Abstract base class for a namespaced key-value store.
@@ -139,13 +143,47 @@ class KVPipelineProxy:
         self.pipeline_storage = kv_class(index_key = "RAY_PIPELINE_INDEX",namespace="pipelines")
         self.request_count = 0
 
-    def add_node(self,pipeline: str, service_no_http: str):
+    # Adds directed edge from service_no_http_1 --> service_no_http_2 in service DAG for pipeline
+    def add_edge(self,pipeline: str, service_no_http_1: str , service_no_http_2: str):
+
         if self.pipeline_storage.exists(pipeline):
-            l = set(self.pipeline_storage.get(pipeline))
-            l.add(service_no_http)
-            self.pipeline_storage.put(pipeline,list(l))
+            g_json = self.pipeline_storage.get(pipeline)
+            G = json_graph.node_link_graph(g_json)
         else:
-            self.pipeline_storage.put(pipeline,[service_no_http])
+            G = nx.DiGraph()
+
+        # try:
+        #    G.add_edge(service_no_http_1,service_no_http_2)
+        #    if not nx.is_directed_acyclic_graph(G) :
+        #         G.remove_edge(service_no_http_1,service_no_http_2)
+        #         raise Exception('This service dependency creates a cycle!')
+        # except Exception:
+        #     traceback_str = ray.utils.format_error_message(traceback.format_exc())
+        #     return ray.exceptions.RayTaskError(str(add_edge), traceback_str)
+
+
+
+        G.add_edge(service_no_http_1,service_no_http_2)
+        g_json = json_graph.node_link_data(G)
+        self.pipeline_storage.put(pipeline,g_json)
+
+    def provision(self,pipeline: str):
+        try :
+            if self.pipeline_storage.exists(pipeline):
+                g_json = self.pipeline_storage.get(pipeline)
+                G = json_graph.node_link_graph(g_json)
+                node_order = list(nx.topological_sort(G))
+                successor_d = {}
+                for node in G:
+                    successor_d[node] = list(G.successors(node))
+                final_d = {'node_order': node_order , 'successors' : successor_d}
+                self.pipeline_storage.put(pipeline,final_d)
+            else:
+                raise Exception('Add service dependencies to pipeline')
+        except Exception:
+            traceback_str = ray.utils.format_error_message(traceback.format_exc())
+            return ray.exceptions.RayTaskError(str(provision), traceback_str)
+
 
     def list_pipeline_service(self):
         self.request_count += 1

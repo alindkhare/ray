@@ -27,7 +27,7 @@ class GlobalState:
     def __init__(self):
         #: holds all actor handles.
         self.backend_actor_handles = []
-
+        self.provisioned_services = set()
         #: actor handle to KV store actor
 
         self.kv_store_actor_handle = None

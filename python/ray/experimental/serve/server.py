@@ -2,12 +2,12 @@ import asyncio
 import json
 
 import uvicorn
-
+from collections import defaultdict, deque
 import ray
 from ray.experimental.async_api import _async_init, as_future
 from ray.experimental.serve.utils import BytesEncoder
 from ray.experimental.serve.constants import HTTP_ROUTER_CHECKER_INTERVAL_S
-
+from networkx.readwrite import json_graph
 
 class JSONResponse:
     """ASGI compliant response class.
@@ -99,13 +99,25 @@ class HTTPProxy:
             await JSONResponse(self.route_table)(scope, receive, send)
         elif current_path in self.route_table:
             pipeline_name = self.route_table[current_path]
-            services_list = self.pipeline_table[pipeline_name]
+            service_dependencies = self.pipeline_table[pipeline_name]
             # await JSONResponse({"result": str(services_list)})(scope, receive, send)
             result = scope
-            for service in services_list:
-                result_object_id_bytes = await as_future(
-                    self.router.enqueue_request.remote(service, result))
-                result = await as_future(ray.ObjectID(result_object_id_bytes))
+            # for service in services_list:
+            #     result_object_id_bytes = await as_future(
+            #         self.router.enqueue_request.remote(service, result))
+            #     result = await as_future(ray.ObjectID(result_object_id_bytes))
+            data_d = defaultdict(dict)
+            for node in service_dependencies['node_order']:
+                data_sent = None
+                if data_d[node] == {}:
+                    data_sent = scope
+                else:
+                    data_sent = data_d[node]
+                result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
+                node_result = await as_future(ray.ObjectID(result_object_id_bytes))
+                for node_successor in service_dependencies['successors'][node]:
+                    data_d[node_successor][node] = node_result 
+
 
             if isinstance(result, ray.exceptions.RayTaskError):
                 await JSONResponse({

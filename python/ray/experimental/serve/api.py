@@ -48,6 +48,8 @@ def create_endpoint_pipeline(pipeline_name, route_expression, blocking=True):
         blocking (bool): If true, the function will wait for service to be
             registered before returning
     """
+    assert pipeline_name in global_state.provisioned_services
+
     future = global_state.kv_store_actor_handle.register_service.remote(
         route_expression, pipeline_name)
     if blocking:
@@ -91,13 +93,32 @@ def create_backend(func_or_class, backend_tag, *actor_init_args):
 
     global_state.registered_backends.add(backend_tag)
 
-def add_service_to_pipeline(pipeline_name,service_name,blocking=True):
-    assert service_name in global_state.registered_services
-    assert pipeline_name in global_state.registered_endpoints
+# def add_service_to_pipeline(pipeline_name,service_name,blocking=True):
+#     assert service_name in global_state.registered_services
+#     # assert pipeline_name in global_state.registered_endpoints
 
-    future = global_state.kv_store_actor_handle_pipeline.add_node.remote(pipeline_name,service_name)
+#     future = global_state.kv_store_actor_handle_pipeline.add_node.remote(pipeline_name,service_name)
+#     if blocking:
+#         ray.get(future)
+
+def add_service_dependencies(pipeline_name,service_name_1,service_name_2,blocking=True):
+    assert service_name_1 in global_state.registered_services
+    assert service_name_2 in global_state.registered_services
+    assert pipeline_name not in provisioned_services
+
+    future = global_state.kv_store_actor_handle_pipeline.add_edge.remote(pipeline_name,service_name_1,service_name_2)
     if blocking:
         ray.get(future)
+
+def provision_pipeline(pipeline_name,blocking=True) :
+    assert pipeline_name not in global_state.provisioned_services
+    future = global_state.kv_store_actor_handle_pipeline.provision.remote(pipeline_name)
+    if blocking : 
+        ray.get(future)
+
+    global_state.provisioned_services.add(pipeline_name)
+
+
 
 
 def link_service(service_name, backend_tag):
@@ -113,6 +134,7 @@ def link_service(service_name, backend_tag):
     >>> serve.split("service-name", {"backend:v1": 1.0})
     """
     assert service_name in global_state.registered_services
+    assert backend in global_state.registered_backends
 
     global_state.router_actor_handle.link.remote(service_name, backend_tag)
     global_state.policy_action_history[service_name].append({backend_tag: 1})
