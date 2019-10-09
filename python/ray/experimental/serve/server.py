@@ -95,7 +95,7 @@ class HTTPProxy:
             body += message.get('body', b'')
             more_body = message.get('more_body', False)
 
-        return body.json()
+        return body
 
     async def __call__(self, scope, receive, send):
         # NOTE: This implements ASGI protocol specified in
