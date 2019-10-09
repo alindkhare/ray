@@ -6,6 +6,7 @@ from werkzeug import urls
 from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
+from ray.experimental.serve.utils import BytesEncoder
 
 def echo1(context):
 	message = ""
@@ -66,8 +67,9 @@ serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 time.sleep(2)
 
 data = {'data':[1,2,3,6], 'model': 'resnet'}
+sent_data = json.dumps(content, cls=BytesEncoder, indent=2).encode()
 while True:
-    resp = requests.post("http://127.0.0.1:8000/echo",data = data).json()
+    resp = requests.post("http://127.0.0.1:8000/echo",data = sent_data).json()
     print(pformat_color_json(resp))
 
     print("...Sleeping for 2 seconds...")
