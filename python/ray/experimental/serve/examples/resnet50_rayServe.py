@@ -23,19 +23,19 @@ class Transform:
 			data = data.convert("RGB")
 		data = self.transform(data)
 		data = data.unsqueeze(0)
-		return tuple(data.size())
+		return data
 
 class Resnet50:
 	def __init__(self, model):
 		self.model = model
 
 	def __call__(self, context):
-		# if 'transform1' in context:
-		# 	data = context['transform']
-		# 	data = Variable(data)
-		# 	data = data.cuda()
-		# 	return self.model.predict(data)
-		return context['transform']
+		if 'transform' in context:
+			data = context['transform']
+			data = Variable(data)
+			data = data.cuda()
+			return self.model.predict(data)
+		return ''
 
 
 
