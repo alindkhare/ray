@@ -21,19 +21,19 @@ class Transform:
 		data = Image.open(io.BytesIO(data))
 		data = self.transform(data)
 		data = data.unsqueeze(0)
-		return data
+		return data.size()
 
 class Resnet50:
 	def __init__(self, model):
 		self.model = model
 
 	def __call__(self, context):
-		if 'transform' in context:
+		if 'transform1' in context:
 			data = context['transform']
 			data = Variable(data)
 			data = data.cuda()
 			return self.model.predict(data)
-		return ''
+		return context
 
 
 
@@ -49,9 +49,11 @@ serve.init(object_store_memory=int(1e9),blocking=True)
 #create Backends
 serve.create_backend(Transform, "transform:v1",transform)
 serve.create_backend(Resnet50,"r50",model)
+
 # create service
 serve.create_no_http_service("transform")
 serve.create_no_http_service("imagenet-classification")
+
 #link service and backend
 serve.link_service("transform", "transform:v1")
 serve.link_service("imagenet-classification", "r50")

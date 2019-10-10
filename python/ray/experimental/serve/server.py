@@ -147,28 +147,28 @@ class HTTPProxy:
 
             elif scope['method'] == 'POST':
                 body = await self.read_body(receive)
-                result = body
-                # service_dependencies = self.pipeline_table[pipeline_name]
-                # result = []
-                # data_d = defaultdict(dict)
-                # for node in service_dependencies['node_order']:
-                #     data_sent = None
-                #     if data_d[node] == {}:
-                #         if node in body:
-                #             data_sent = body[node]
-                #         else:
-                #             result = ray.exceptions.RayTaskError('Specify service name in input', '')
-                #             break
-                #     else:
-                #         data_sent = data_d[node]
-                #     result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
-                #     node_result = await as_future(ray.ObjectID(result_object_id_bytes))
-                #     if service_dependencies['successors'][node] == []:
-                #         result = node_result
-                #         break
-                #     else:
-                #         for node_successor in service_dependencies['successors'][node]:
-                #             data_d[node_successor][node] = node_result 
+                # result = body
+                service_dependencies = self.pipeline_table[pipeline_name]
+                result = []
+                data_d = defaultdict(dict)
+                for node in service_dependencies['node_order']:
+                    data_sent = None
+                    if data_d[node] == {}:
+                        if node in body:
+                            data_sent = body[node]
+                        else:
+                            result = ray.exceptions.RayTaskError('Specify service name in input', '')
+                            break
+                    else:
+                        data_sent = data_d[node]
+                    result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
+                    node_result = await as_future(ray.ObjectID(result_object_id_bytes))
+                    if service_dependencies['successors'][node] == []:
+                        result = node_result
+                        break
+                    else:
+                        for node_successor in service_dependencies['successors'][node]:
+                            data_d[node_successor][node] = node_result 
 
 
                 if isinstance(result, ray.exceptions.RayTaskError):
