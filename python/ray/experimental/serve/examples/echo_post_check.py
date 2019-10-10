@@ -7,7 +7,7 @@ from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
 from ray.experimental.serve.utils import BytesEncoder
-
+import numpy as np
 def echo1(context):
 	message = ""
 	message += 'FROM MODEL1 -> '
