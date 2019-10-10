@@ -45,7 +45,7 @@ transform = transforms.Compose([transforms.Resize(min_img_size),
 model = resnet50(pretrained=True)
 model = model.cuda()
 
-serve.init(blocking=True)
+serve.init(object_store_memory=int(1e9),blocking=True)
 #create Backends
 serve.create_backend(Transform, "transform:v1",transform)
 serve.create_backend(Resnet50,"r50",model)
