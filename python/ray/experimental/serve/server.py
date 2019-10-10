@@ -111,8 +111,8 @@ class HTTPProxy:
         if current_path == "/":
             await JSONResponse(self.route_table)(scope, receive, send)
         elif current_path in self.route_table:
+            pipeline_name = self.route_table[current_path]
             if scope['method'] == 'GET' :
-                pipeline_name = self.route_table[current_path]
                 service_dependencies = self.pipeline_table[pipeline_name]
                 # await JSONResponse({"result": str(services_list)})(scope, receive, send)
                 result = scope
