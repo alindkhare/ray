@@ -25,16 +25,16 @@ class Transform:
 
 @ray.remote(num_gpus=1)
 class Resnet50:
-    def __init__(self, model):
-        self.model = model
+	def __init__(self, model):
+		self.model = model
 
-    def __call__(self, context):
-    	if 'transform' in context:
-	    	data = context['transform']
-	    	data = Variable(data)
-	    	data = data.cuda()
-	    	return self.model.predict(data)
-	    return ''
+	def __call__(self, context):
+		if 'transform' in context:
+			data = context['transform']
+			data = Variable(data)
+			data = data.cuda()
+			return self.model.predict(data)
+		return ''
 
 
 
