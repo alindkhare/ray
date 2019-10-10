@@ -19,6 +19,8 @@ class Transform:
 		self.transform = transform
 	def __call__(self,data):
 		data = Image.open(io.BytesIO(data))
+		if data.mode != "RGB":
+			data = data.convert("RGB")
 		data = self.transform(data)
 		data = data.unsqueeze(0)
 		return tuple(data.size())
@@ -28,11 +30,11 @@ class Resnet50:
 		self.model = model
 
 	def __call__(self, context):
-		if 'transform1' in context:
-			data = context['transform']
-			data = Variable(data)
-			data = data.cuda()
-			return self.model.predict(data)
+		# if 'transform1' in context:
+		# 	data = context['transform']
+		# 	data = Variable(data)
+		# 	data = data.cuda()
+		# 	return self.model.predict(data)
 		return context['transform']
 
 

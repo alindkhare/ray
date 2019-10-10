@@ -150,6 +150,7 @@ class HTTPProxy:
                 # result = body
                 service_dependencies = self.pipeline_table[pipeline_name]
                 result = []
+                error_service = ""
                 data_d = defaultdict(dict)
                 for node in service_dependencies['node_order']:
                     data_sent = None
@@ -163,6 +164,10 @@ class HTTPProxy:
                         data_sent = data_d[node]
                     result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
                     node_result = await as_future(ray.ObjectID(result_object_id_bytes))
+                    if isinstance(node_result, ray.exceptions.RayTaskError):
+                        error_service = node
+                        result = node_result
+                        break
                     if service_dependencies['successors'][node] == []:
                         result = node_result
                         break
@@ -173,7 +178,7 @@ class HTTPProxy:
 
                 if isinstance(result, ray.exceptions.RayTaskError):
                     await JSONResponse({
-                        "error": "internal error, please use python API to debug"
+                        "error": error_service + " internal error, please use python API to debug"
                     })(scope, receive, send)
                 else:
                     await JSONResponse({"result": result})(scope, receive, send)
