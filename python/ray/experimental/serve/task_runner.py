@@ -64,7 +64,18 @@ class RayServeMixin:
         # TODO(simon):
         # D1, D2, D3
         # __call__ should be able to take multiple *args and **kwargs.
-        result = wrap_to_ray_error(self.__call__, work_item.request_body)
+        data = None
+        # It is directly the data
+        if type(work_item.request_body) is list:
+            data = work_item.request_body[0]
+        # it is dictionary of futures
+        elif type(work_item.request_body) is dict:
+            data = {}
+            for key in work_item.request_body.keys():
+                service_data = ray.get(work_item.request_body[key])
+                data[key] = service_data
+                
+        result = wrap_to_ray_error(self.__call__, data)
         result_object_id = work_item.result_object_id
         ray.worker.global_worker.put_object(result_object_id, result)
 

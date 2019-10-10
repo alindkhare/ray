@@ -125,13 +125,13 @@ class HTTPProxy:
                 for node in service_dependencies['node_order']:
                     data_sent = None
                     if data_d[node] == {}:
-                        data_sent = scope
+                        data_sent = [scope]
                     else:
                         data_sent = data_d[node]
                     result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
-                    node_result = await as_future(ray.ObjectID(result_object_id_bytes))
+                    node_result = ray.ObjectID(result_object_id_bytes)
                     if service_dependencies['successors'][node] == []:
-                        result = node_result
+                        result = ray.get(node_result)
                         break
                     else:
                         for node_successor in service_dependencies['successors'][node]:
@@ -156,20 +156,20 @@ class HTTPProxy:
                     data_sent = None
                     if data_d[node] == {}:
                         if node in body:
-                            data_sent = body[node]
+                            data_sent = [body[node]]
                         else:
                             result = ray.exceptions.RayTaskError('Specify service name in input', '')
                             break
                     else:
                         data_sent = data_d[node]
                     result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
-                    node_result = await as_future(ray.ObjectID(result_object_id_bytes))
-                    if isinstance(node_result, ray.exceptions.RayTaskError):
-                        error_service = node
-                        result = node_result
-                        break
+                    node_result = ray.ObjectID(result_object_id_bytes)
+                    # if isinstance(node_result, ray.exceptions.RayTaskError):
+                    #     error_service = node
+                    #     result = node_result
+                    #     break
                     if service_dependencies['successors'][node] == []:
-                        result = node_result
+                        result = ray.get(node_result)
                         break
                     else:
                         for node_successor in service_dependencies['successors'][node]:
