@@ -23,7 +23,6 @@ class Transform:
 		data = data.unsqueeze(0)
 		return data
 
-@ray.remote(num_gpus=1)
 class Resnet50:
 	def __init__(self, model):
 		self.model = model
