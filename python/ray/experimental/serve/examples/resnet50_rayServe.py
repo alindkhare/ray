@@ -18,7 +18,7 @@ class Transform:
 	def __init__(self,transform):
 		self.transform = transform
 	def __call__(self,data):
-		data = Image.open(io.BytesIO(data))
+		data = Image.open(io.BytesIO(base64.b64decode(data)))
 		if data.mode != "RGB":
 			data = data.convert("RGB")
 		data = self.transform(data)
