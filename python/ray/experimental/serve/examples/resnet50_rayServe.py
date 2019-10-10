@@ -74,7 +74,7 @@ serve.create_endpoint_pipeline("pipeline1", "/imgNetClassification", blocking=Tr
 time.sleep(2)
 
 # data = {'data':[1,2,3,6], 'model': 'resnet'}
-req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()).decode() }
+req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()) }
 sent_data = json.dumps(req_json, cls=BytesEncoder, indent=2).encode()
 while True:
     resp = requests.post("http://127.0.0.1:8000/imgNetClassification",data = sent_data).json()
