@@ -33,9 +33,9 @@ class Resnet50:
 		if 'transform' in context:
 			data = context['transform']
 			data = Variable(data)
-			data = data.cuda()
+			# data = data.cuda()
 			return self.model.predict(data)
-		return ''
+		# return context['transform']
 
 
 
@@ -45,7 +45,7 @@ transform = transforms.Compose([transforms.Resize(min_img_size),
                                          transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                               std=[0.229, 0.224, 0.225])])
 model = resnet50(pretrained=True)
-model = model.cuda()
+# model = model.cuda()
 
 serve.init(object_store_memory=int(1e9),blocking=True)
 #create Backends
