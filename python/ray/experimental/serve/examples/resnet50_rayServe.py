@@ -2,7 +2,7 @@ import time
 
 import requests
 from werkzeug import urls
-
+import ray
 from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
