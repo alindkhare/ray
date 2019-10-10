@@ -21,7 +21,7 @@ class Transform:
 		data = Image.open(io.BytesIO(data))
 		data = self.transform(data)
 		data = data.unsqueeze(0)
-		return data.size()
+		return data
 
 class Resnet50:
 	def __init__(self, model):
