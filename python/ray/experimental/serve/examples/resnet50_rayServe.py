@@ -33,7 +33,7 @@ class Resnet50:
 			data = Variable(data)
 			data = data.cuda()
 			return self.model.predict(data)
-		return context
+		return context['transform']
 
 
 
