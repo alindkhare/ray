@@ -72,6 +72,8 @@ serve.create_endpoint_pipeline("pipeline1", "/imgNetClassification", blocking=Tr
 
 
 
+
+
 time.sleep(2)
 
 # data = {'data':[1,2,3,6], 'model': 'resnet'}
