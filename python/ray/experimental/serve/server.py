@@ -190,7 +190,7 @@ class HTTPProxy:
                     for k,v in zip(node_list,future_enqueues):
                         data_d[k] = v
 
-                result = data_d[last_node]
+                result = ray.get(data_d[last_node])
 
                 if isinstance(result, ray.exceptions.RayTaskError):
                     await JSONResponse({
