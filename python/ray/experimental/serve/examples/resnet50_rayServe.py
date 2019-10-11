@@ -29,14 +29,14 @@ class Resnet50:
 	def __init__(self, model):
 		self.model = model
 
-	def __call__(self, context):
-		if 'transform' in context:
-			data = context['transform']
-			data = Variable(data)
-			data = data.cuda()
-			return self.model(data).data.cpu().numpy().argmax()
+	def __call__(self, data):
+		# if 'transform' in context:
+		# data = context['transform']
+		data = Variable(data)
+		data = data.cuda()
+		return self.model(data).data.cpu().numpy().argmax()
 		# return context['transform']
-		return ''
+		# return ''
 
 
 

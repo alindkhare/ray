@@ -7,95 +7,95 @@ from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
 
-def echo1(context):
+def echo1(*context):
 	message = ""
 	message += 'FROM MODEL1 -> '
 	return message
 
-def echo2(context):
+def echo2(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL2 -> '
 	return data
 
-def echo3(context):
+def echo3(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL3 -> '
 	return data
 
-def echo4(context):
+def echo4(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL4 -> '
 	return data
 
-def echo5(context):
+def echo5(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL5 -> '
 	return data
 
-def echo6(context):
+def echo6(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL6 -> '
 	return data
 
-def echo7(context):
+def echo7(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL7 -> '
 	return data
 
-def echo8(context):
+def echo8(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL8 -> '
 	return data
 
-def echo9(context):
+def echo9(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL9 -> '
 	return data
 
-def echo10(context):
+def echo10(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""

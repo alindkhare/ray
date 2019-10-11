@@ -17,9 +17,9 @@ def echo2(context):
 	message += 'FROM MODEL2 -> '
 	return message
 
-def echo3(context):
-	data_from_service1 = context['serve1']
-	data_from_service2 = context['serve2']
+def echo3(a,b):
+	data_from_service1 = a
+	data_from_service2 = b
 	data = '[ ' + data_from_service1 + ',' + data_from_service2 + '] ->'
 	data += 'FROM MODEL3 -> '
 	return data

@@ -64,7 +64,7 @@ class RayServeMixin:
         # TODO(simon):
         # D1, D2, D3
         # __call__ should be able to take multiple *args and **kwargs.
-        result = wrap_to_ray_error(self.__call__, work_item.request_body)
+        result = wrap_to_ray_error(self.__call__, *work_item.request_body)
         result_object_id = work_item.result_object_id
         ray.worker.global_worker.put_object(result_object_id, result)
 

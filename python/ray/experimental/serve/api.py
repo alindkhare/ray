@@ -59,7 +59,7 @@ def create_endpoint_pipeline(pipeline_name, route_expression, blocking=True):
 def create_no_http_service(service_name):
     global_state.registered_services.add(service_name)
 
-def create_backend(func_or_class, backend_tag, *actor_init_args):
+def create_backend(func_or_class, backend_tag, num_gpu,*actor_init_args):
     """Create a backend using func_or_class and assign backend_tag.
 
     Args:
@@ -75,7 +75,7 @@ def create_backend(func_or_class, backend_tag, *actor_init_args):
     elif inspect.isclass(func_or_class):
         # Python inheritance order is right-to-left. We put RayServeMixin
         # on the left to make sure its methods are not overriden.
-        @ray.remote(num_gpus=1)
+        @ray.remote(num_gpus=num_gpu)
         class CustomActor(RayServeMixin, func_or_class):
             pass
 
