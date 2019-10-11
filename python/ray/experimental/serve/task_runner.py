@@ -78,6 +78,8 @@ class RayServeMixin:
             data = work_item.request_body
                 
         result = wrap_to_ray_error(self.__call__, *data)
+        result_object_id = work_item.result_object_id
+        ray.worker.global_worker.put_object(result_object_id, result)
 
 
 
