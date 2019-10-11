@@ -17,9 +17,9 @@ def echo2(context):
 	message += 'FROM MODEL2 -> '
 	return message
 
-def echo3(context):
-	data_from_service1 = context['serve1']
-	data_from_service2 = context['serve2']
+def echo3(a,b):
+	data_from_service1 = a
+	data_from_service2 = b
 	data = '[ ' + data_from_service1 + ',' + data_from_service2 + '] ->'
 	data += 'FROM MODEL3 -> '
 	return data
@@ -29,9 +29,9 @@ serve.init(blocking=True)
 # serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 
 # Create Backends
-serve.create_backend(echo1, "echo:v1")
-serve.create_backend(echo2, "echo:v2")
-serve.create_backend(echo3,"echo:v3")
+serve.create_backend(echo1, "echo:v1",num_gpu=0)
+serve.create_backend(echo2, "echo:v2",num_gpu=0)
+serve.create_backend(echo3,"echo:v3",num_gpu=0)
 
 # Create services
 serve.create_no_http_service("serve1")

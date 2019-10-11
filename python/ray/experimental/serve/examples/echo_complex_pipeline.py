@@ -7,95 +7,95 @@ from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
 
-def echo1(context):
+def echo1(*context):
 	message = ""
 	message += 'FROM MODEL1 -> '
 	return message
 
-def echo2(context):
+def echo2(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL2 -> '
 	return data
 
-def echo3(context):
+def echo3(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL3 -> '
 	return data
 
-def echo4(context):
+def echo4(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL4 -> '
 	return data
 
-def echo5(context):
+def echo5(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL5 -> '
 	return data
 
-def echo6(context):
+def echo6(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL6 -> '
 	return data
 
-def echo7(context):
+def echo7(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL7 -> '
 	return data
 
-def echo8(context):
+def echo8(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL8 -> '
 	return data
 
-def echo9(context):
+def echo9(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL9 -> '
 	return data
 
-def echo10(context):
+def echo10(*context):
 	start = "[ "
-	for key in context.keys():
-		start =  start + context[key] + " , "
+	for val in context:
+		start =  start + val + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
@@ -107,16 +107,16 @@ serve.init(blocking=True)
 # serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 
 # Create Backends
-serve.create_backend(echo1, "echo:v1")
-serve.create_backend(echo2, "echo:v2")
-serve.create_backend(echo3,"echo:v3")
-serve.create_backend(echo4,"echo:v4")
-serve.create_backend(echo5,"echo:v5")
-serve.create_backend(echo6,"echo:v6")
-serve.create_backend(echo7,"echo:v7")
-serve.create_backend(echo8,"echo:v8")
-serve.create_backend(echo9,"echo:v9")
-serve.create_backend(echo10,"echo:v10")
+serve.create_backend(echo1, "echo:v1",num_gpu=0)
+serve.create_backend(echo2, "echo:v2",num_gpu=0)
+serve.create_backend(echo3,"echo:v3",num_gpu=0)
+serve.create_backend(echo4,"echo:v4",num_gpu=0)
+serve.create_backend(echo5,"echo:v5",num_gpu=0)
+serve.create_backend(echo6,"echo:v6",num_gpu=0)
+serve.create_backend(echo7,"echo:v7",num_gpu=0)
+serve.create_backend(echo8,"echo:v8",num_gpu=0)
+serve.create_backend(echo9,"echo:v9",num_gpu=0)
+serve.create_backend(echo10,"echo:v10",num_gpu=0)
 
 # Create services
 serve.create_no_http_service("serve1")

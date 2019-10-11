@@ -114,29 +114,34 @@ class HTTPProxy:
             pipeline_name = self.route_table[current_path]
             if scope['method'] == 'GET' :
                 service_dependencies = self.pipeline_table[pipeline_name]
-                # await JSONResponse({"result": str(services_list)})(scope, receive, send)
-                result = scope
-                # for service in services_list:
-                #     result_object_id_bytes = await as_future(
-                #         self.router.enqueue_request.remote(service, result))
-                #     result = await as_future(ray.ObjectID(result_object_id_bytes))
-                data_d = defaultdict(dict)
+                result = scope       
+                data_d = {}
+                size = len(service_dependencies['node_order'])
+                last_node = service_dependencies['node_order'][size-1]
+                assert len(last_node) == 1
+                last_node = last_node[0]
+                for node_list in service_dependencies['node_order']:
+                    data_sent = {}
+                    for node in node_list:
+                        if len(service_dependencies['predecessors'][node]) == 0:
+                            data_sent[node] = (scope)
+                        else:
+                            predecessors_list = service_dependencies['predecessors'][node]
+                            list_data = [data_d[p] for p in predecessors_list]
+                            data_sent[node] = list_data
 
-                for node in service_dependencies['node_order']:
-                    data_sent = None
-                    if data_d[node] == {}:
-                        data_sent = [scope]
-                    else:
-                        data_sent = data_d[node]
-                    result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
-                    node_result = ray.ObjectID(result_object_id_bytes)
-                    if service_dependencies['successors'][node] == []:
-                        result = ray.get(node_result)
-                        break
-                    else:
-                        for node_successor in service_dependencies['successors'][node]:
-                            data_d[node_successor][node] = node_result 
+                    future_list = [self.router.enqueue_request.remote(node, data_sent[node]) for node in node_list]
+                    completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
+                    assert(len(non_c) == 0)
+                    future_enqueues_binary = ray.get(completed_futures)
 
+                    future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
+                    # completed_future_enqueues, non_c = ray.wait(future_enqueues,num_returns=len(future_enqueues))
+                    # assert(len(non_c) == 0)
+                    # node_data_list = ray.get(completed_future_enqueues)
+                    for k,v in zip(node_list,future_enqueues):
+                        data_d[k] = v
+                result = ray.get(data_d[last_node])
 
                 if isinstance(result, ray.exceptions.RayTaskError):
                     await JSONResponse({
@@ -147,34 +152,45 @@ class HTTPProxy:
 
             elif scope['method'] == 'POST':
                 body = await self.read_body(receive)
+                assert type(body) is dict
                 # result = body
                 service_dependencies = self.pipeline_table[pipeline_name]
-                result = []
-                error_service = ""
-                data_d = defaultdict(dict)
-                for node in service_dependencies['node_order']:
-                    data_sent = None
-                    if data_d[node] == {}:
-                        if node in body:
-                            data_sent = [body[node]]
-                        else:
-                            result = ray.exceptions.RayTaskError('Specify service name in input', '')
-                            break
-                    else:
-                        data_sent = data_d[node]
-                    result_object_id_bytes = await as_future(self.router.enqueue_request.remote(node, data_sent))
-                    node_result = ray.ObjectID(result_object_id_bytes)
-                    # if isinstance(node_result, ray.exceptions.RayTaskError):
-                    #     error_service = node
-                    #     result = node_result
-                    #     break
-                    if service_dependencies['successors'][node] == []:
-                        result = ray.get(node_result)
-                        break
-                    else:
-                        for node_successor in service_dependencies['successors'][node]:
-                            data_d[node_successor][node] = node_result 
 
+                result = body
+                
+                data_d = {}
+
+                size = len(service_dependencies['node_order'])
+                last_node = service_dependencies['node_order'][size-1]
+                assert len(last_node) == 1
+                last_node = last_node[0]
+                for node_list in service_dependencies['node_order']:
+                    data_sent = {}
+                    for node in node_list:
+                        if len(service_dependencies['predecessors'][node]) == 0:
+                            if node in body:
+                                data_sent[node] = (body[node])
+                            else:
+                                result = ray.exceptions.RayTaskError('Specify service name in input', '')
+                                break
+                        else:
+                            predecessors_list = service_dependencies['predecessors'][node]
+                            list_data = [data_d[p] for p in predecessors_list]
+                            data_sent[node] = list_data
+
+                    future_list = [self.router.enqueue_request.remote(node, data_sent[node]) for node in node_list]
+                    completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
+                    assert(len(non_c) == 0)
+                    future_enqueues_binary = ray.get(completed_futures)
+
+                    future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
+                    # completed_future_enqueues, non_c = ray.wait(future_enqueues,num_returns=len(future_enqueues))
+                    # assert(len(non_c) == 0)
+                    # node_data_list = ray.get(completed_future_enqueues)
+                    for k,v in zip(node_list,future_enqueues):
+                        data_d[k] = v
+
+                result = data_d[last_node]
 
                 if isinstance(result, ray.exceptions.RayTaskError):
                     await JSONResponse({

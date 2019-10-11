@@ -9,6 +9,7 @@ from ray.experimental.serve.utils import logger
 import networkx as nx
 from networkx.readwrite import json_graph
 import traceback
+from ray.experimental.serve.utils import topological_sort_grouped
 
 class NamespacedKVStore(ABC):
     """Abstract base class for a namespaced key-value store.
@@ -151,6 +152,7 @@ class KVPipelineProxy:
             G = json_graph.node_link_graph(g_json)
         else:
             G = nx.DiGraph()
+        G = nx.OrderedDiGraph(G)
 
         # try:
         #    G.add_edge(service_no_http_1,service_no_http_2)
@@ -172,11 +174,17 @@ class KVPipelineProxy:
             if self.pipeline_storage.exists(pipeline):
                 g_json = self.pipeline_storage.get(pipeline)
                 G = json_graph.node_link_graph(g_json)
-                node_order = list(nx.topological_sort(G))
-                successor_d = {}
+                G = nx.OrderedDiGraph(G)
+                if nx.is_directed_acyclic_graph(G):
+                    node_order = list(topological_sort_grouped(G))
+                else:
+                    raise Exception('Service dependencies contain cycle')
+
+                # node_order = list(nx.topological_sort(G))
+                predecessors_d = {}
                 for node in G:
-                    successor_d[node] = list(G.successors(node))
-                final_d = {'node_order': node_order , 'successors' : successor_d}
+                    predecessors_d[node] = list(G.predecessors(node))
+                final_d = {'node_order': node_order , 'predecessors' : predecessors_d}
                 self.pipeline_storage.put(pipeline,final_d)
             else:
                 raise Exception('Add service dependencies to pipeline')

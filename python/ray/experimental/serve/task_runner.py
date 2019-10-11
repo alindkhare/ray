@@ -64,20 +64,22 @@ class RayServeMixin:
         # TODO(simon):
         # D1, D2, D3
         # __call__ should be able to take multiple *args and **kwargs.
+
         data = None
-        # It is directly the data
+        # It is list of futures in order of edges added to this model service
         if type(work_item.request_body) is list:
-            data = work_item.request_body[0]
-        # it is dictionary of futures
-        elif type(work_item.request_body) is dict:
-            data = {}
-            for key in work_item.request_body.keys():
-                service_data = ray.get(work_item.request_body[key])
-                data[key] = service_data
+            future_list = work_item.request_body
+            completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
+            assert(len(non_c) == 0)
+            data = ray.get(completed_futures)
+
+        # it is directly the data
+        elif type(work_item.request_body) is tuple:
+            data = work_item.request_body
                 
-        result = wrap_to_ray_error(self.__call__, data)
-        result_object_id = work_item.result_object_id
-        ray.worker.global_worker.put_object(result_object_id, result)
+        result = wrap_to_ray_error(self.__call__, *data)
+
+
 
         # The worker finished one unit of work.
         # It will now tail recursively schedule the main_loop again.

@@ -29,14 +29,14 @@ class Resnet50:
 	def __init__(self, model):
 		self.model = model
 
-	def __call__(self, context):
-		if 'transform' in context:
-			data = context['transform']
-			data = Variable(data)
-			data = data.cuda()
-			return self.model(data).data.cpu().numpy().argmax()
+	def __call__(self, data):
+		# if 'transform' in context:
+		# data = context['transform']
+		data = Variable(data)
+		data = data.cuda()
+		return self.model(data).data.cpu().numpy().argmax()
 		# return context['transform']
-		return ''
+		# return ''
 
 
 
@@ -50,8 +50,8 @@ model = model.cuda()
 
 serve.init(object_store_memory=int(1e9),blocking=True)
 #create Backends
-serve.create_backend(Transform, "transform:v1",transform)
-serve.create_backend(Resnet50,"r50",model)
+serve.create_backend(Transform, "transform:v1",0,transform)
+serve.create_backend(Resnet50,"r50",1,model)
 
 # create service
 serve.create_no_http_service("transform")
