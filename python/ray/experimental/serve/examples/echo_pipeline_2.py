@@ -29,9 +29,9 @@ serve.init(blocking=True)
 # serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 
 # Create Backends
-serve.create_backend(echo1, "echo:v1")
-serve.create_backend(echo2, "echo:v2")
-serve.create_backend(echo3,"echo:v3")
+serve.create_backend(echo1, "echo:v1",num_gpu=0)
+serve.create_backend(echo2, "echo:v2",num_gpu=0)
+serve.create_backend(echo3,"echo:v3",num_gpu=0)
 
 # Create services
 serve.create_no_http_service("serve1")
