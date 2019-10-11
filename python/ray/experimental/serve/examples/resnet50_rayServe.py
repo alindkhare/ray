@@ -50,8 +50,8 @@ model = model.cuda()
 
 serve.init(object_store_memory=int(1e9),blocking=True)
 #create Backends
-serve.create_backend(Transform, "transform:v1",transform)
-serve.create_backend(Resnet50,"r50",model)
+serve.create_backend(Transform, "transform:v1",,num_gpu=0,transform)
+serve.create_backend(Resnet50,"r50",num_gpu=1,model)
 
 # create service
 serve.create_no_http_service("transform")
