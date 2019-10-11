@@ -138,7 +138,7 @@ class HTTPProxy:
 
                     future_list = [self.router.enqueue_request.remote(node, data_sent[node]) for node in node_list]
                     completed_futures, non_c  = ray.wait(future_list)
-                    assert(len(non_c) == 0)
+                    assert(len(non_c) == 0 and len(completed_futures) == 2)
                     future_enqueues_binary = ray.get(completed_futures)
 
                     future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
