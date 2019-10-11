@@ -124,7 +124,7 @@ class HTTPProxy:
                     data_sent = {}
                     for node in node_list:
                         if len(service_dependencies['predecessors'][node]) == 0:
-                            data_sent[node] = (scope)
+                            data_sent[node] = (scope,)
                         else:
                             predecessors_list = service_dependencies['predecessors'][node]
                             list_data = [data_d[p] for p in predecessors_list]
@@ -169,7 +169,7 @@ class HTTPProxy:
                     for node in node_list:
                         if len(service_dependencies['predecessors'][node]) == 0:
                             if node in body:
-                                data_sent[node] = (body[node])
+                                data_sent[node] = (body[node],)
                             else:
                                 result = ray.exceptions.RayTaskError('Specify service name in input', '')
                                 break
