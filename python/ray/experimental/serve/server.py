@@ -137,12 +137,12 @@ class HTTPProxy:
                             data_sent[node] = list_data
 
                     future_list = [self.router.enqueue_request.remote(node, data_sent[node]) for node in node_list]
-                    completed_futures, non_c  = ray.wait(future_list)
+                    completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
                     assert(len(non_c) == 0)
                     future_enqueues_binary = ray.get(completed_futures)
 
                     future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
-                    completed_future_enqueues, non_c = ray.wait(future_enqueues)
+                    completed_future_enqueues, non_c = ray.wait(future_enqueues,num_returns=len(future_enqueues))
                     assert(len(non_c) == 0)
                     node_data_list = ray.get(completed_future_enqueues)
                     for k,v in zip(node_list,node_data_list):
