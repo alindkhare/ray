@@ -140,7 +140,7 @@ class HTTPProxy:
                     completed_futures, _  = ray.wait(future_list)
                     future_enqueues_binary = ray.get(completed_futures)
 
-                    future_enqueues = [ray.ObjectID(x) for x in future_enqueues]
+                    future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
                     completed_future_enqueues, _ = ray.wait(future_enqueues)
                     node_data_list = ray.get(completed_future_enqueues)
                     for k,v in zip(node_list,node_data_list):
