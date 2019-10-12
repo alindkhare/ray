@@ -207,7 +207,7 @@ class KVPipelineProxy:
 
 
     def list_pipeline_service(self):
-        assert self.provision_pipeline_cnt == 1
+        # assert self.provision_pipeline_cnt == 1
         self.request_count += 1
         table = self.pipeline_storage.as_dict()
         return table
