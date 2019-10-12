@@ -143,6 +143,18 @@ class KVPipelineProxy:
     def __init__(self, kv_class=RayInternalKVStore):
         self.pipeline_storage = kv_class(index_key = "RAY_PIPELINE_INDEX",namespace="pipelines")
         self.request_count = 0
+        self.provision_pipeline_cnt = 0
+
+    def add_node(self,pipeline: str, service_no_http_1: str):
+        if self.pipeline_storage.exists(pipeline):
+            g_json = self.pipeline_storage.get(pipeline)
+            G = json_graph.node_link_graph(g_json)
+        else:
+            G = nx.DiGraph()
+        G = nx.OrderedDiGraph(G)
+        G.add_node(service_no_http_1)
+        g_json = json_graph.node_link_data(G)
+        self.pipeline_storage.put(pipeline,g_json)
 
     # Adds directed edge from service_no_http_1 --> service_no_http_2 in service DAG for pipeline
     def add_edge(self,pipeline: str, service_no_http_1: str , service_no_http_2: str):
@@ -186,6 +198,7 @@ class KVPipelineProxy:
                     predecessors_d[node] = list(G.predecessors(node))
                 final_d = {'node_order': node_order , 'predecessors' : predecessors_d}
                 self.pipeline_storage.put(pipeline,final_d)
+                self.provision_pipeline_cnt += 1
             else:
                 raise Exception('Add service dependencies to pipeline')
         except Exception:
@@ -194,9 +207,21 @@ class KVPipelineProxy:
 
 
     def list_pipeline_service(self):
+        assert self.provision_pipeline_cnt == 1
         self.request_count += 1
         table = self.pipeline_storage.as_dict()
         return table
+    def get_dependency(self,pipeline: str):
+        try:
+            assert self.provision_pipeline_cnt == 1
+            if self.pipeline_storage.exists(pipeline):
+                final_d = self.pipeline_storage.get(pipeline)
+                return final_d
+            else:
+                raise Exception('Pipeline does not exists!' )
+        except Exception:
+            traceback_str = ray.utils.format_error_message(traceback.format_exc())
+            return ray.exceptions.RayTaskError('Issue with getting dependencies', traceback_str)
 
     def get_request_count(self):
         """Return the number of requests that fetched the routing table.
