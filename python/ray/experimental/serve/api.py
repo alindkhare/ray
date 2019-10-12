@@ -119,6 +119,16 @@ def provision_pipeline(pipeline_name,blocking=True) :
     global_state.provisioned_services.add(pipeline_name)
 
 
+def get_service_dependencies(pipeline_name):
+    assert pipeline_name in global_state.provisioned_services
+    future = global_state.kv_store_actor_handle_pipeline.get_dependency.remote(pipeline_name)
+    return ray.get(future)
+def add_service(pipeline_name,service_name,blocking = True):
+    assert pipeline_name not in global_state.provisioned_services
+    assert service_name in global_state.registered_services
+    future = global_state.kv_store_actor_handle_pipeline.add_node.remote(pipeline_name,service_name)
+    if blocking : 
+        ray.get(future)
 
 
 def link_service(service_name, backend_tag):
@@ -140,69 +150,69 @@ def link_service(service_name, backend_tag):
     global_state.policy_action_history[service_name].append({backend_tag: 1})
 
 
-def split(endpoint_name, traffic_policy_dictionary):
-    """Associate a service endpoint with traffic policy.
+# def split(endpoint_name, traffic_policy_dictionary):
+#     """Associate a service endpoint with traffic policy.
 
-    Example:
+#     Example:
 
-    >>> serve.split("service-name", {
-        "backend:v1": 0.5,
-        "backend:v2": 0.5
-    })
+#     >>> serve.split("service-name", {
+#         "backend:v1": 0.5,
+#         "backend:v2": 0.5
+#     })
 
-    Args:
-        endpoint_name (str): A registered service endpoint.
-        traffic_policy_dictionary (dict): a dictionary maps backend names
-            to their traffic weights. The weights must sum to 1.
-    """
+#     Args:
+#         endpoint_name (str): A registered service endpoint.
+#         traffic_policy_dictionary (dict): a dictionary maps backend names
+#             to their traffic weights. The weights must sum to 1.
+#     """
 
-    # Perform dictionary checks
-    assert endpoint_name in global_state.registered_endpoints
+#     # Perform dictionary checks
+#     assert endpoint_name in global_state.registered_endpoints
 
-    assert isinstance(traffic_policy_dictionary,
-                      dict), "Traffic policy must be dictionary"
-    prob = 0
-    for backend, weight in traffic_policy_dictionary.items():
-        prob += weight
-        assert (backend in global_state.registered_backends
-                ), "backend {} is not registered".format(backend)
-    assert np.isclose(
-        prob, 1,
-        atol=0.02), "weights must sum to 1, currently it sums to {}".format(
-            prob)
+#     assert isinstance(traffic_policy_dictionary,
+#                       dict), "Traffic policy must be dictionary"
+#     prob = 0
+#     for backend, weight in traffic_policy_dictionary.items():
+#         prob += weight
+#         assert (backend in global_state.registered_backends
+#                 ), "backend {} is not registered".format(backend)
+#     assert np.isclose(
+#         prob, 1,
+#         atol=0.02), "weights must sum to 1, currently it sums to {}".format(
+#             prob)
 
-    global_state.router_actor_handle.set_traffic.remote(
-        endpoint_name, traffic_policy_dictionary)
-    global_state.policy_action_history[endpoint_name].append(
-        traffic_policy_dictionary)
-
-
-def rollback(endpoint_name):
-    """Rollback a traffic policy decision.
-
-    Args:
-        endpoint_name (str): A registered service endpoint.
-    """
-    assert endpoint_name in global_state.registered_endpoints
-    action_queues = global_state.policy_action_history[endpoint_name]
-    cur_policy, prev_policy = action_queues[-1], action_queues[-2]
-
-    logger.warning("""
-Current traffic policy is:
-{cur_policy}
-
-Will rollback to:
-{prev_policy}
-""".format(
-        cur_policy=pformat_color_json(cur_policy),
-        prev_policy=pformat_color_json(prev_policy)))
-
-    action_queues.pop()
-    global_state.router_actor_handle.set_traffic.remote(
-        endpoint_name, prev_policy)
+#     global_state.router_actor_handle.set_traffic.remote(
+#         endpoint_name, traffic_policy_dictionary)
+#     global_state.policy_action_history[endpoint_name].append(
+#         traffic_policy_dictionary)
 
 
-def get_handle(endpoint_name):
+# def rollback(endpoint_name):
+#     """Rollback a traffic policy decision.
+
+#     Args:
+#         endpoint_name (str): A registered service endpoint.
+#     """
+#     assert endpoint_name in global_state.registered_endpoints
+#     action_queues = global_state.policy_action_history[endpoint_name]
+#     cur_policy, prev_policy = action_queues[-1], action_queues[-2]
+
+#     logger.warning("""
+# Current traffic policy is:
+# {cur_policy}
+
+# Will rollback to:
+# {prev_policy}
+# """.format(
+#         cur_policy=pformat_color_json(cur_policy),
+#         prev_policy=pformat_color_json(prev_policy)))
+
+#     action_queues.pop()
+#     global_state.router_actor_handle.set_traffic.remote(
+#         endpoint_name, prev_policy)
+
+
+def get_handle(pipeline_name):
     """Retrieve RayServeHandle for service endpoint to invoke it from Python.
 
     Args:
@@ -211,9 +221,9 @@ def get_handle(endpoint_name):
     Returns:
         RayServeHandle
     """
-    assert endpoint_name in global_state.registered_endpoints
+    assert pipeline_name in global_state.provisioned_services
 
     # Delay import due to it's dependency on global_state
     from ray.experimental.serve.handle import RayServeHandle
 
-    return RayServeHandle(global_state.router_actor_handle, endpoint_name)
+    return RayServeHandle(global_state.kv_store_actor_handle_pipeline,global_state.router_actor_handle, pipeline_name)
