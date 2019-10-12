@@ -42,7 +42,7 @@ class RayServeHandle:
           for node in node_list:
               if len(self.service_dependencies['predecessors'][node]) == 0:
                   if node in args:
-                      data_sent[node] = [args[node]]
+                      data_sent[node] = (args[node],)
                   else:
                       raise Exception('Specify service name in input')
               else:
