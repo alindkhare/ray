@@ -56,15 +56,15 @@ class RayServeHandle:
           future_enqueues_binary = ray.get(completed_futures)
 
           future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
-          completed_future_enqueues, non_c = ray.wait(future_enqueues,num_returns=len(future_enqueues))
-          assert(len(non_c) == 0)
-          node_data_list = ray.get(completed_future_enqueues)
-          for k,v in zip(node_list,node_data_list):
+          # completed_future_enqueues, non_c = ray.wait(future_enqueues,num_returns=len(future_enqueues))
+          # assert(len(non_c) == 0)
+          # node_data_list = ray.get(completed_future_enqueues)
+          for k,v in zip(node_list,future_enqueues):
               data_d[k] = v
         # result_object_id_bytes = ray.get(
         #     self.router_handle.enqueue_request.remote(self.endpoint_name,
         #                                               *args))
-        return data_d[last_node]
+        return ray.get(data_d[last_node])
 
     # def get_traffic_policy(self):
     #     # TODO(simon): This method is implemented via checking global state
