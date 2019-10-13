@@ -8,7 +8,7 @@ An example showing error thrown because model3 excepts only one input.
 Lazy provisioning of pipeline helps in checking for checks.
 '''
 
-serve.init()
+serve.init(object_store_memory=int(1e9))
 
 transform_model = srtml.AbstractModel("imagenet-transform",output_shape=(3,224,224),input_type=str,output_type=torch.Tensor,num_inputs=1)
 resnet_model = srtml.AbstractModel("imagenet-resnet",input_shape=(3,224,224),input_type=torch.Tensor,output_type=int,num_inputs=1)
