@@ -105,7 +105,7 @@ class AbstractModel:
 			if args is None:
 				serve.create_backend(cls_or_func, backend_name,num_gpu=num_gpu)
 			else:
-				serve.create_backend(cls_or_func, backend_name,num_gpu=num_gpu,*args)
+				serve.create_backend(cls_or_func, backend_name,num_gpu,*args)
 			serve.link_service(self.service_name, backend_name)
 			self.is_linked = True
 			self.backends.append(backend_name)
