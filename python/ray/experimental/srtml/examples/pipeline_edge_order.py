@@ -12,6 +12,9 @@ serve.init()
 model1 = srtml.AbstractModel("echo",input_type=str,output_type=str,num_inputs=1)
 model2 = srtml.AbstractModel("echo",input_type=str,output_type=str,num_inputs=1)
 model3 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=2)
+
+
+
 pipeline1 = srtml.Pipeline()
 pipeline2 = srtml.Pipeline()
 
@@ -26,7 +29,7 @@ pipeline2.provision_pipeline()
 
 
 time.sleep(1)
-print("Model1 : {} Model2: {}".format(model1.service_name,model2.service_name))
+print("Model1 : {} Model2: {}".format(model1.get_backend(),model2.get_backend()))
 
 print("PIPELINE-1 ----------------------------------------------")
 result = pipeline1.remote("INP")
