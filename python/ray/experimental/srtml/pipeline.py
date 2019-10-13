@@ -33,7 +33,7 @@ class Pipeline:
 			m1_config = self.abstract_models_config[model1_sname]
 			m2_config = self.abstract_models_config[model2_sname]
 
-			if __isWildCard(self,m2_config['num_inputs']) or m2_config['num_inputs'] > 0:
+			if self.__isWildCard(self,m2_config['num_inputs']) or m2_config['num_inputs'] > 0:
 				final_check = True
 			else:
 				return False,"Cannot add more incoming edges!"
