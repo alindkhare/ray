@@ -22,7 +22,7 @@ time.sleep(2)
 
 while True:
 	data = base64.b64encode(open('elephant.jpg', "rb").read())
-	data = pipeline.get_http_formatted_data(data)
+	data = classification_p.get_http_formatted_data(data)
 	resp = requests.post(http_address,data = data).json()
 	print(pformat_color_json(resp))
 
