@@ -1,7 +1,7 @@
 import uuid
 from ray.experimental import serve
 from collections import defaultdict, deque
-
+from ray.experimental.serve.utils import BytesEncoder
 class Pipeline:
 	def __init__(self):
 		self.abstract_models_obj = {}
@@ -11,6 +11,7 @@ class Pipeline:
 		self.provisioned = False
 		self.pipeline_info = None
 		self.pipeline_handle = None
+		self.http_served = False
 	def fill_config(self,model):
 		if not self.provisioned:
 			config = model.get_config()
@@ -62,7 +63,7 @@ class Pipeline:
 			else:
 				raise Exception(message)
 
-	def provision_pipeline(self,http=False):
+	def provision_pipeline(self):
 		if not self.provisioned:
 			for service1 in self.inverted_service_dependency.keys():
 				directed_edges = self.inverted_service_dependency[service1]
@@ -80,6 +81,26 @@ class Pipeline:
 			for n in node_list:
 				sent[n] = data
 			return self.pipeline_handle.remote(**sent)
+	def http(self,route=None):
+		if self.provisioned and not self.http_served:
+			if route is None:
+				route = '/{}'.format(self.pipeline_name)
+			serve.create_endpoint_pipeline(self.pipeline_name, route, blocking=True)
+			self.http_served = True
+			address = serve.global_state.http_address + route
+			return address
+
+	def get_http_formatted_data(self,data):
+		if self.http_served:
+			node_list = self.pipeline_info['node_order'][0]
+			sent = {}
+			for n in node_list:
+				sent[n] = data
+
+			sent_data = json.dumps(sent, cls=BytesEncoder, indent=2).encode()
+			return sent_data
+
+
 
 
 
