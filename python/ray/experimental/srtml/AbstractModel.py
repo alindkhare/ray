@@ -91,7 +91,7 @@ class AbstractModel:
 			model = resnet50(pretrained=True)
 			model = model.cuda()
 
-			return backend_name,resnet50,[model],1
+			return backend_name,Resnet50,[model],1
 		return None
 
 	def get_backend(self):
