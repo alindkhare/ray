@@ -2,7 +2,7 @@ from ray.experimental import serve
 from ray.experimental import srtml
 import time
 from ray.experimental.serve.utils import pformat_color_json
-
+import requests
 '''
 A complex pipeline example with HTTP!
 '''
