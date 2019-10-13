@@ -13,9 +13,7 @@ class AbstractModel:
 		self.is_linked = False
 		self.backends = []
 		self.link_model()
-	'''
-	Currently this function is hard-coded
-	'''
+	
 	def get_config(self):
 		if self.is_linked:
 			d = {
@@ -28,6 +26,9 @@ class AbstractModel:
 			return d
 		return None
 
+	'''
+	Currently this function is hard-coded
+	'''
 	def find_backends(self):
 		if self.feature == "echo":
 			backend_name = uuid.uuid4().hex
@@ -50,7 +51,7 @@ class AbstractModel:
 			return backend_name,echoC,None,0
 		elif self.feature == "imagenet-transform":
 			import torchvision.transforms as transforms
-			from PIL import image
+			from PIL import Image
 			import io
 			import base64
 			backend_name = uuid.uuid4().hex
