@@ -3,6 +3,7 @@ from ray.experimental import srtml
 import time
 import torch
 import base64
+import requests
 '''
 An example showing error thrown because model3 excepts only one input. 
 Lazy provisioning of pipeline helps in checking for checks.
