@@ -4,6 +4,9 @@ import time
 import torch
 import base64
 import requests
+from ray.experimental.serve.utils import pformat_color_json
+
+
 '''
 An example showing error thrown because model3 excepts only one input. 
 Lazy provisioning of pipeline helps in checking for checks.
@@ -23,7 +26,9 @@ time.sleep(2)
 
 while True:
 	data = base64.b64encode(open('elephant.jpg', "rb").read())
+
 	data = classification_p.get_http_formatted_data(data)
+
 	resp = requests.post(http_address,data = data).json()
 	print(pformat_color_json(resp))
 
