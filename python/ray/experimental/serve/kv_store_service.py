@@ -215,9 +215,13 @@ class KVPipelineProxy:
         return table
     def get_dependency(self,pipeline: str):
         try:
-            assert self.provision_pipeline_cnt[pipeline] == 1
+            # assert self.provision_pipeline_cnt[pipeline] == 1
             if self.pipeline_storage.exists(pipeline):
                 final_d = self.pipeline_storage.get(pipeline)
+                if type(final_d) is dict:
+                    return final_d
+                else:
+                    raise Exception('Getting dependency before provisioning pipeline' )
                 return final_d
             else:
                 raise Exception('Pipeline does not exists!' )
