@@ -2,6 +2,9 @@ import uuid
 from ray.experimental import serve
 from collections import defaultdict, deque
 from ray.experimental.serve.utils import BytesEncoder
+import time
+import json
+
 class Pipeline:
 	def __init__(self):
 		self.abstract_models_obj = {}
@@ -70,6 +73,7 @@ class Pipeline:
 				for service2 in directed_edges:
 					serve.add_service_dependencies(self.pipeline_name,service2,service1)
 			serve.provision_pipeline(self.pipeline_name)
+			time.sleep(1)
 			self.pipeline_info = serve.get_service_dependencies(self.pipeline_name)
 			self.pipeline_handle = serve.get_handle(self.pipeline_name)
 			self.provisioned = True
