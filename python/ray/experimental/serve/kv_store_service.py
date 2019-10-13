@@ -143,7 +143,7 @@ class KVPipelineProxy:
     def __init__(self, kv_class=RayInternalKVStore):
         self.pipeline_storage = kv_class(index_key = "RAY_PIPELINE_INDEX",namespace="pipelines")
         self.request_count = 0
-        self.provision_pipeline_cnt = 0
+        self.provision_pipeline_cnt = {}
 
     def add_node(self,pipeline: str, service_no_http_1: str):
         if self.pipeline_storage.exists(pipeline):
@@ -198,7 +198,7 @@ class KVPipelineProxy:
                     predecessors_d[node] = list(G.predecessors(node))
                 final_d = {'node_order': node_order , 'predecessors' : predecessors_d}
                 self.pipeline_storage.put(pipeline,final_d)
-                self.provision_pipeline_cnt += 1
+                self.provision_pipeline_cnt[pipeline] = 1
             else:
                 raise Exception('Add service dependencies to pipeline')
         except Exception:
@@ -213,10 +213,13 @@ class KVPipelineProxy:
         return table
     def get_dependency(self,pipeline: str):
         try:
-            assert self.provision_pipeline_cnt == 1
+            # assert self.provision_pipeline_cnt[pipeline] == 1
             if self.pipeline_storage.exists(pipeline):
                 final_d = self.pipeline_storage.get(pipeline)
-                return final_d
+                if type(final_d) is dict:
+                    return final_d
+                else:
+                    raise Exception('Getting dependency before provisioning pipeline' )
             else:
                 raise Exception('Pipeline does not exists!' )
         except Exception:
