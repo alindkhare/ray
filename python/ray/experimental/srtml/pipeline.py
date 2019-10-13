@@ -21,7 +21,7 @@ class Pipeline:
 
 	def add_model(self,model):
 		if not self.provisioned:
-			if model.service_name not in abstract_models_obj:
+			if model.service_name not in self.abstract_models_obj:
 				self.abstract_models_obj[model.service_name] = model
 				self.fill_config(model)
 
