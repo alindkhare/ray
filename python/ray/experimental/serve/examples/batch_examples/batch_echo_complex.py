@@ -9,158 +9,198 @@ import json
 from pprint import pprint
 import ray
 def echo1(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# time.sleep(5)
+	# # for val in context:
+	# # 	assert len(val) == batch_size
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL1/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	time.sleep(5)
-	# for val in context:
-	# 	assert len(val) == batch_size
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL1/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 	
 
 def echo2(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data =""
+	# 	data += 'FROM MODEL2/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data =""
-		data += 'FROM MODEL2/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo3(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL3/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL3/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo4(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL4/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL4/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo5(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL5/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL5/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo6(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL6/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL6/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo7(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL7/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL7/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo8(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL8/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL8/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo9(*context):
-	result = []
+	# result = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL9/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL9/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 def echo10(*context):
-	sresult = []
+	# sresult = []
+	# batch_size = len(context[0])
+	# for i in range(batch_size):
+	# 	# start = "[ "
+	# 	# for val in context:
+	# 	# 	start =  start + val[i] + " , "
+	# 	# start += " ] --> "
+	# 	# data = start
+	# 	# message = ""
+	# 	data = ""
+	# 	data += 'FROM MODEL10/{} -> '.format(batch_size)
+	# 	result.append(data)
+	# return result
 	batch_size = len(context[0])
-	for i in range(batch_size):
-		# start = "[ "
-		# for val in context:
-		# 	start =  start + val[i] + " , "
-		# start += " ] --> "
-		# data = start
-		# message = ""
-		data = ""
-		data += 'FROM MODEL10/{} -> '.format(batch_size)
-		result.append(data)
-	return result
+	for val in context:
+		assert len(val) == batch_size
+	return ["from m1" for i in batch_size]
 
 serve.init(blocking=True)
 
