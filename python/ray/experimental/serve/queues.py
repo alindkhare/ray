@@ -63,7 +63,7 @@ class CentralizedQueues:
 
     def __init__(self):
         # service_name -> request queue
-        self.queues = defaultdict(deque)
+        self.queues = defaultdict(list)
 
         # service_name -> max. batch size
         self.service_max_batch_size = {}
