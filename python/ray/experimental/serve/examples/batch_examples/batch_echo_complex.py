@@ -28,7 +28,7 @@ def echo1(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 	
 
 def echo2(*context):
@@ -48,7 +48,7 @@ def echo2(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo3(*context):
 	# result = []
@@ -67,7 +67,7 @@ def echo3(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo4(*context):
 	# result = []
@@ -86,7 +86,7 @@ def echo4(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo5(*context):
 	# result = []
@@ -105,7 +105,7 @@ def echo5(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo6(*context):
 	# result = []
@@ -124,7 +124,7 @@ def echo6(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo7(*context):
 	# result = []
@@ -143,7 +143,7 @@ def echo7(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo8(*context):
 	# result = []
@@ -159,10 +159,10 @@ def echo8(*context):
 	# 	data += 'FROM MODEL8/{} -> '.format(batch_size)
 	# 	result.append(data)
 	# return result
-	batch_size = len(context[0])
+	bbatch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo9(*context):
 	# result = []
@@ -181,7 +181,7 @@ def echo9(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 def echo10(*context):
 	# sresult = []
@@ -200,7 +200,7 @@ def echo10(*context):
 	batch_size = len(context[0])
 	for val in context:
 		assert len(val) == batch_size
-	return ["from m1" for i in batch_size]
+	return ["from m1" for i in range(batch_size)]
 
 serve.init(blocking=True)
 
