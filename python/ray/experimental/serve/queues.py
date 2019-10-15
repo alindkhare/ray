@@ -118,6 +118,7 @@ class CentralizedQueues:
             ready_backends = self._get_available_backends(service)
 
             while len(queue) and len(ready_backends):
+                logger.debug("Service %s having queue lengths %s", service,len(queue))
                 # Fast path, only one backend available.
                 # if len(ready_backends) == 1:
                 #     backend = ready_backends[0]
