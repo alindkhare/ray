@@ -56,8 +56,11 @@ def create_endpoint_pipeline(pipeline_name, route_expression, blocking=True):
         ray.get(future)
     global_state.registered_endpoints.add(pipeline_name)
 
-def create_no_http_service(service_name):
+def create_no_http_service(service_name,max_batch_size=1,blocking = True):
     global_state.registered_services.add(service_name)
+    future = global_state.router_actor_handle.set_max_batch.remote(service_name,max_batch=max_batch_size)
+    if blocking:
+        ray.get(future)
 
 def create_backend(func_or_class, backend_tag, num_gpu,*actor_init_args):
     """Create a backend using func_or_class and assign backend_tag.
