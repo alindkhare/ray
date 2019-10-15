@@ -16,7 +16,7 @@ import base64
 from pprint import pprint
 class Transform:
 	def __init__(self,transform):
-		self.transform = transform[0]
+		self.transform = transform
 	def __call__(self,data):
 		data = Image.open(io.BytesIO(base64.b64decode(data[0])))
 		if data.mode != "RGB":
