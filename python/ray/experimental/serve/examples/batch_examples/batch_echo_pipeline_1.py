@@ -75,9 +75,18 @@ serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 
 time.sleep(2)
 
-while True:
-    resp = requests.get("http://127.0.0.1:8000/echo").json()
-    print(pformat_color_json(resp))
+
+
+def client()
+	while True:
+	    resp = requests.get("http://127.0.0.1:8000/echo").json()
+	    print(pformat_color_json(resp))
+
+for i in range(30):
+	t = Thread(target=client)
+	t.daemon = True
+	t.start()
+
 
     # print("...Sleeping for 2 seconds...")
     # time.sleep(1)
