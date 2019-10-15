@@ -10,7 +10,7 @@ import requests
 def echo1(context):
 	result = []
 	batch_size = len(context)
-	time.sleep(5)
+	time.sleep(60)
 	for i in range(batch_size):
 		message = ""
 		message += 'FROM MODEL1/BS-{} -> '.format(batch_size)
