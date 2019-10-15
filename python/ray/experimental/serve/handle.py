@@ -1,6 +1,6 @@
 import ray
 from ray.experimental import serve
-
+import time
 
 class RayServeHandle:
     """A handle to a service endpoint.
@@ -33,6 +33,10 @@ class RayServeHandle:
     def remote(self, **args):
         # TODO(simon): Support kwargs once #5606 is merged.
         data_d = {}
+        if 'slo' in args:
+          args['slo'] = time.time() + float(args['slo'])/1000
+        else:
+          args['slo'] = time.time() + float(1e5)
         size = len(self.service_dependencies['node_order'])
         last_node = self.service_dependencies['node_order'][size-1]
         assert len(last_node) == 1
@@ -50,7 +54,7 @@ class RayServeHandle:
                   list_data = [data_d[p] for p in predecessors_list]
                   data_sent[node] = list_data
 
-          future_list = [self.router_handle.enqueue_request.remote(node, data_sent[node]) for node in node_list]
+          future_list = [self.router_handle.enqueue_request.remote(node, data_sent[node],slo=args['slo']) for node in node_list]
           completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
           assert(len(non_c) == 0)
           future_enqueues_binary = ray.get(completed_futures)

@@ -4,15 +4,18 @@ import numpy as np
 
 import ray
 from ray.experimental.serve.utils import get_custom_object_id, logger
-
+from heapq import heappush, heappop 
 
 class Query:
-    def __init__(self, request_body, result_object_id=None):
+    def __init__(self, request_body,slo,result_object_id=None):
         self.request_body = request_body
+        self.slo = slo
         if result_object_id is None:
             self.result_object_id = get_custom_object_id()
         else:
             self.result_object_id = result_object_id
+    def __lt__(self, other):
+        return self.slo < other.slo
 
 
 class WorkIntent:
@@ -71,9 +74,9 @@ class CentralizedQueues:
         # backend_name -> worker queue
         self.workers = defaultdict(deque)
 
-    def enqueue_request(self, service, request_data):
-        query = Query(request_data)
-        self.queues[service].append(query)
+    def enqueue_request(self, service,request_data,slo=float(1e10)):
+        query = Query(request_data,slo)
+        heappush(self.queues[service],query)
         self.flush()
         return query.result_object_id.binary()
 
@@ -147,7 +150,7 @@ class CentralizedQueues:
                         break
                     work = self.workers[backend].popleft()
                     pop_len = min(batch_size,len(queue))
-                    request = [queue.popleft() for i in range(pop_len)]
+                    request = [heappop(queue) for i in range(pop_len)]
                     ray.worker.global_worker.put_object(
                         work.work_object_id, request)
 
