@@ -5,7 +5,7 @@ from threading import Thread
 from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
-from requests import async
+from grequests import async
 
 def echo1(context):
 	result = []
