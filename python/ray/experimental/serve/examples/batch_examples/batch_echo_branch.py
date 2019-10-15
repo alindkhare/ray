@@ -6,7 +6,7 @@ from werkzeug import urls
 from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
-
+from pprint import pprint
 def echo1(*context):
 	batch_size = len(context[0])
 	result = []
@@ -99,4 +99,3 @@ results = ray.get(future_list)
 for result in results:
 	print("--------------------------------")
 	print(result)
-	
