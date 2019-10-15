@@ -76,5 +76,5 @@ while True:
     resp = requests.get("http://127.0.0.1:8000/echo").json()
     print(pformat_color_json(resp))
 
-    print("...Sleeping for 2 seconds...")
-    time.sleep(1)
+    # print("...Sleeping for 2 seconds...")
+    # time.sleep(1)
