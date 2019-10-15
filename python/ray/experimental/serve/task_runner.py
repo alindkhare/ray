@@ -65,16 +65,16 @@ class RayServeMixin:
         # D1, D2, D3
         # __call__ should be able to take multiple *args and **kwargs.
         # if len(work_item_list) == 1:
-        work_item = work_item_list[0]
-        result = wrap_to_ray_error(self.__call__, *work_item.request_body)
-        result_object_id = work_item.result_object_id
-        ray.worker.global_worker.put_object(result_object_id, result)
+        # work_item = work_item_list[0]
+        # result = wrap_to_ray_error(self.__call__, *work_item.request_body)
+        # result_object_id = work_item.result_object_id
+        # ray.worker.global_worker.put_object(result_object_id, result)
         # else:
         result_object_id_list = []
         data_list = []
         for work_item in work_item_list:
             result_object_id_list.append(work_item.result_object_id)
-            if len(data_list) = 0:
+            if len(data_list) == 0:
                 data_list = [ [] for x in range(len(work_item.request_body))]
             for service_order,input_data in enumerate(work_item.request_body):
                 data_list[service_order].append(input_data)
@@ -82,7 +82,10 @@ class RayServeMixin:
         result_list = wrap_to_ray_error(self.__call__, *data_list)
 
         assert(len(result_object_id_list) == len(result_list))
-        for i,
+
+        for i,result in enumerate(result_list):
+            result_object_id = result_object_id_list[i]
+            ray.worker.global_worker.put_object(result_object_id, result)
 
 
 
