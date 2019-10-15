@@ -230,7 +230,7 @@ pprint(dependency)
 node_list = dependency['node_order'][0]
 future_list = []
 pipeline_handle = serve.get_handle("pipeline1")
-for r in range(1):
+for r in range(12):
 	sent = {}
 	for n in node_list:
 		sent[n] = "INP-{}".format(r)
