@@ -19,7 +19,7 @@ def echo2(context):
 	result = []
 	batch_size = len(context)
 	for i in range(batch_size):
-		message = ""
+		message = context[i]
 		message += 'FROM MODEL2/BS-{} -> '.format(batch_size)
 		result.append(message)
 	return result
@@ -28,7 +28,7 @@ def echo3(context):
 	result = []
 	batch_size = len(context)
 	for i in range(batch_size):
-		message = ""
+		message = context[i]
 		message += 'FROM MODEL3/BS-{} -> '.format(batch_size)
 		result.append(message)
 	return result
@@ -77,4 +77,4 @@ while True:
     print(pformat_color_json(resp))
 
     print("...Sleeping for 2 seconds...")
-    time.sleep(2)
+    time.sleep(1)
