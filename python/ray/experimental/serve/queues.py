@@ -116,9 +116,9 @@ class CentralizedQueues:
     def _flush(self):
         for service, queue in self.queues.items():
             ready_backends = self._get_available_backends(service)
-
+            logger.info("Service %s having queue lengths %s ready backends %s", service,len(queue),len(ready_backends))
             while len(queue) and len(ready_backends):
-                logger.info("Service %s having queue lengths %s", service,len(queue))
+
                 # Fast path, only one backend available.
                 # if len(ready_backends) == 1:
                 #     backend = ready_backends[0]
