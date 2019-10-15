@@ -75,7 +75,7 @@ serve.provision_pipeline("pipeline1")
 # serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 pipeline_handle = serve.get_handle("pipeline1")
 args = {"serve1": "Intial Data --> "}
-futures = [pipeline_handle.remote(**args) for i in range(10)]
+futures = [pipeline_handle.remote(**args) for i in range(8)]
 results = ray.get(futures)
 for result in results:
 	print("------------------------------")
