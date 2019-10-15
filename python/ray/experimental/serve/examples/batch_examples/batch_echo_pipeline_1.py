@@ -74,17 +74,17 @@ serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 
 time.sleep(2)
 
-def do_something(response):
-    print(response)
+# def do_something(response):
+#     print(response)
 
-# def client():
-	# import requests
-urls = ["http://127.0.0.1:8000/echo"] * 60
-async_list = []
-for u in urls:
-	action_item = async.get(u, hooks = {'response' : do_something})
-	async_list.append(action_item)
-async.map(async_list)
+# # def client():
+# 	# import requests
+# urls = ["http://127.0.0.1:8000/echo"] * 60
+# async_list = []
+# for u in urls:
+# 	action_item = async.get(u, hooks = {'response' : do_something})
+# 	async_list.append(action_item)
+# async.map(async_list)
 # while True:
 #     resp = requests.get("http://127.0.0.1:8000/echo").json()
 #     print(pformat_color_json(resp))
