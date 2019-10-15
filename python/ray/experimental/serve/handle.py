@@ -64,7 +64,7 @@ class RayServeHandle:
         # result_object_id_bytes = ray.get(
         #     self.router_handle.enqueue_request.remote(self.endpoint_name,
         #                                               *args))
-        return ray.get(data_d[last_node])
+        return data_d[last_node]
 
     # def get_traffic_policy(self):
     #     # TODO(simon): This method is implemented via checking global state

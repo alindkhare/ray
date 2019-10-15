@@ -62,6 +62,9 @@ class CentralizedQueues:
         # service_name -> request queue
         self.queues = defaultdict(deque)
 
+        # service_name -> max. batch size
+        self.service_max_batch_size = {}
+
         # service_name -> traffic_policy
         self.traffic = defaultdict(dict)
 
@@ -73,6 +76,9 @@ class CentralizedQueues:
         self.queues[service].append(query)
         self.flush()
         return query.result_object_id.binary()
+
+    def set_max_batch(self,service,max_batch):
+        self.service_max_batch_size[service] = max_batch
 
     def dequeue_request(self, backend):
         intention = WorkIntent()
@@ -110,32 +116,38 @@ class CentralizedQueues:
     def _flush(self):
         for service, queue in self.queues.items():
             ready_backends = self._get_available_backends(service)
-
+            # logger.info("Service %s having queue lengths %s ready backends %s", service,len(queue),len(ready_backends))
             while len(queue) and len(ready_backends):
+
                 # Fast path, only one backend available.
-                if len(ready_backends) == 1:
-                    backend = ready_backends[0]
-                    request, work = (queue.popleft(),
-                                     self.workers[backend].popleft())
-                    ray.worker.global_worker.put_object(
-                        work.work_object_id, request)
+                # if len(ready_backends) == 1:
+                #     backend = ready_backends[0]
+                #     work = self.workers[backend].popleft()
+                #     batch_size = self.service_max_batch_size[service]
+                #     pop_len = min(batch_size,len(queue))
+                #     request = [queue.popleft() for i in range(pop_len)]
+                #     ray.worker.global_worker.put_object(
+                #         work.work_object_id, request)
 
-                # We have more than one backend available.
-                # We will roll a dice among the multiple backends.
-                else:
-                    backend_weights = np.array([
-                        self.traffic[service][backend_name]
-                        for backend_name in ready_backends
-                    ])
-                    # Normalize the weights to 1.
-                    backend_weights /= backend_weights.sum()
-                    chosen_backend = np.random.choice(
-                        ready_backends, p=backend_weights).squeeze()
+                # # We have more than one backend available.
+                # # We will roll a dice among the multiple backends.
+                # else:
+                    # backend_weights = np.array([
+                    #     self.traffic[service][backend_name]
+                    #     for backend_name in ready_backends
+                    # ])
+                    # # Normalize the weights to 1.
+                    # backend_weights /= backend_weights.sum()
+                    # chosen_backend = np.random.choice(
+                    #     ready_backends, p=backend_weights).squeeze()
 
-                    request, work = (
-                        queue.popleft(),
-                        self.workers[chosen_backend].popleft(),
-                    )
+                batch_size = self.service_max_batch_size[service]
+                for backend in ready_backends:
+                    if len(queue) == 0:
+                        break
+                    work = self.workers[backend].popleft()
+                    pop_len = min(batch_size,len(queue))
+                    request = [queue.popleft() for i in range(pop_len)]
                     ray.worker.global_worker.put_object(
                         work.work_object_id, request)
 

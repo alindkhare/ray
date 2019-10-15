@@ -7,10 +7,11 @@ from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
 from pprint import pprint
+import ray
 def echo1(context):
-	message = context
+	message = context[0]
 	message += 'FROM MODEL1 -> '
-	return message
+	return [message]
 
 
 serve.init(blocking=True)
@@ -24,5 +25,6 @@ pprint(serve.get_service_dependencies("pipeline1"))
 pipeline_handle = serve.get_handle("pipeline1")
 args = {"serve1": "Intial Data --> "}
 result = pipeline_handle.remote(**args)
+result = ray.get(result)
 print("Result is")
 print(result)

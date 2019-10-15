@@ -7,100 +7,101 @@ from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
 from pprint import pprint
+import ray
 def echo1(*context):
-	message = context[0]
+	message = ""
 	message += 'FROM MODEL1 -> '
-	return message
+	return [message]
 
 def echo2(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL2 -> '
-	return data
+	return [data]
 
 def echo3(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL3 -> '
-	return data
+	return [data]
 
 def echo4(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL4 -> '
-	return data
+	return [data]
 
 def echo5(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL5 -> '
-	return data
+	return [data]
 
 def echo6(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL6 -> '
-	return data
+	return [data]
 
 def echo7(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL7 -> '
-	return data
+	return [data]
 
 def echo8(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL8 -> '
-	return data
+	return [data]
 
 def echo9(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL9 -> '
-	return data
+	return [data]
 
 def echo10(*context):
 	start = "[ "
 	for val in context:
-		start =  start + val + " , "
+		start =  start + val[0] + " , "
 	start += " ] --> "
 	data = start
 	# message = ""
 	data += 'FROM MODEL10 -> '
-	return data
+	return [data]
 
 serve.init(blocking=True)
 
@@ -189,6 +190,7 @@ for n in node_list:
 	sent[n] = "INP"
 pipeline_handle = serve.get_handle("pipeline1")
 result = pipeline_handle.remote(**sent)
+result = ray.get(result)
 pprint(result)
 
 # # You can only create an endpoint for pipeline after provisioning the pipeline

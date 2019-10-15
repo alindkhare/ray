@@ -59,30 +59,50 @@ class RayServeMixin:
         work_token = ray.get(
             self._ray_serve_router_handle.dequeue_request.remote(
                 self._ray_serve_dequeue_requestr_name))
-        work_item = ray.get(ray.ObjectID(work_token))
+        work_item_list = ray.get(ray.ObjectID(work_token))
 
         # TODO(simon):
         # D1, D2, D3
         # __call__ should be able to take multiple *args and **kwargs.
 
-        data = None
-        # It is list of futures in order of edges added to this model service
-        if type(work_item.request_body) is list:
-            future_list = work_item.request_body
-            completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
-            assert(len(non_c) == 0)
-            data = ray.get(completed_futures)
+        # data = None
+        # # It is list of futures in order of edges added to this model service
+        # if type(work_item.request_body) is list:
+        #     future_list = work_item.request_body
+        #     completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
+        #     assert(len(non_c) == 0)
+        #     data = ray.get(completed_futures)
 
-        # it is directly the data
-        elif type(work_item.request_body) is tuple:
-            data = work_item.request_body
+        # # it is directly the data
+        # elif type(work_item.request_body) is tuple:
+        #     data = work_item.request_body
                 
-        result = wrap_to_ray_error(self.__call__, *data)
-        result_object_id = work_item.result_object_id
-        ray.worker.global_worker.put_object(result_object_id, result)
+        # result = wrap_to_ray_error(self.__call__, *data)
+        # result_object_id = work_item.result_object_id
+        # ray.worker.global_worker.put_object(result_object_id, result)
 
+        result_object_id_list = []
+        data_list = []
+        for work_item in work_item_list:
+            result_object_id_list.append(work_item.result_object_id)
+            if len(data_list) == 0:
+                data_list = [ [] for x in range(len(work_item.request_body))]
+            data = None
+            if type(work_item.request_body) is list:
+                future_list = work_item.request_body
+                completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
+                assert(len(non_c) == 0)
+                data = ray.get(completed_futures)
+            elif type(work_item.request_body) is tuple:
+                data = list(work_item.request_body)
+            for service_order,input_data in enumerate(data):
+                data_list[service_order].append(input_data)
 
-
+        result_list = wrap_to_ray_error(self.__call__, *data_list)
+        assert(len(result_object_id_list) == len(result_list))
+        for i,result in enumerate(result_list):
+            result_object_id = result_object_id_list[i]
+            ray.worker.global_worker.put_object(result_object_id, result)
         # The worker finished one unit of work.
         # It will now tail recursively schedule the main_loop again.
 

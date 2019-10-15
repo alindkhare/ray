@@ -18,12 +18,12 @@ class Transform:
 	def __init__(self,transform):
 		self.transform = transform
 	def __call__(self,data):
-		data = Image.open(io.BytesIO(base64.b64decode(data)))
+		data = Image.open(io.BytesIO(base64.b64decode(data[0])))
 		if data.mode != "RGB":
 			data = data.convert("RGB")
 		data = self.transform(data)
 		data = data.unsqueeze(0)
-		return data
+		return [data]
 
 class Resnet50:
 	def __init__(self, model):
@@ -32,9 +32,9 @@ class Resnet50:
 	def __call__(self, data):
 		# if 'transform' in context:
 		# data = context['transform']
-		data = Variable(data)
+		data = Variable(data[0])
 		data = data.cuda()
-		return self.model(data).data.cpu().numpy().argmax()
+		return [self.model(data).data.cpu().numpy().argmax()]
 		# return context['transform']
 		# return ''
 
