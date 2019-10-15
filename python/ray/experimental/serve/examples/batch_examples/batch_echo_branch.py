@@ -57,8 +57,8 @@ serve.create_backend(echo3,"echo:v3",num_gpu=0)
 
 # Create services
 serve.create_no_http_service("serve1",max_batch_size=5)
-serve.create_no_http_service("serve2",max_batch_size=3)
-serve.create_no_http_service("serve3",max_batch_size=5)
+serve.create_no_http_service("serve2",max_batch_size=1)
+serve.create_no_http_service("serve3",max_batch_size=2)
 
 # Link services and backends
 serve.link_service("serve1", "echo:v1")
