@@ -77,7 +77,7 @@ class CentralizedQueues:
         self.flush()
         return query.result_object_id.binary()
 
-    def set_max_batch(self,service,max_batch=1):
+    def set_max_batch(self,service,max_batch):
         self.service_max_batch_size[service] = max_batch
 
     def dequeue_request(self, backend):

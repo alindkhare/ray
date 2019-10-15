@@ -58,6 +58,7 @@ def create_endpoint_pipeline(pipeline_name, route_expression, blocking=True):
 
 def create_no_http_service(service_name,max_batch_size=1,blocking=True):
     global_state.registered_services.add(service_name)
+    print("setting batch size : {} for service: {}".format(max_batch_size,service_name))
     future = global_state.router_actor_handle.set_max_batch.remote(service_name,max_batch=max_batch_size)
     if blocking:
         ray.get(future)
