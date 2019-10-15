@@ -1,11 +1,11 @@
 import time
 
-import requests
 from werkzeug import urls
 from threading import Thread
 from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
+from requests import async
 
 def echo1(context):
 	result = []
@@ -75,17 +75,25 @@ serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 
 time.sleep(2)
 
+def do_something(response):
+    print(response)
 
+# def client():
+	# import requests
+urls = ["http://127.0.0.1:8000/echo"] * 60
+async_list = []
+for u in urls:
+	action_item = async.get(u, hooks = {'response' : do_something})
+	async_list.append(action_item)
+async.map(async_list)
+# while True:
+#     resp = requests.get("http://127.0.0.1:8000/echo").json()
+#     print(pformat_color_json(resp))
 
-def client():
-	while True:
-	    resp = requests.get("http://127.0.0.1:8000/echo").json()
-	    print(pformat_color_json(resp))
-
-for i in range(30):
-	t = Thread(target=client)
-	t.daemon = True
-	t.start()
+# for i in range(30):
+# 	t = Thread(target=client)
+# 	t.daemon = True
+# 	t.start()
 
 
     # print("...Sleeping for 2 seconds...")
