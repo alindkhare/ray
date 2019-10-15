@@ -74,7 +74,7 @@ class CentralizedQueues:
     def enqueue_request(self, service, request_data):
         query = Query(request_data)
         self.queues[service].append(query)
-        # self.flush()
+        self.flush()
         return query.result_object_id.binary()
 
     def set_max_batch(self,service,max_batch=1):
