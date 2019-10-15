@@ -57,7 +57,7 @@ serve.create_backend(echo3,"echo:v3",num_gpu=0)
 
 # Create services
 serve.create_no_http_service("serve1",max_batch_size=5)
-serve.create_no_http_service("serve2",max_batch_size=5)
+serve.create_no_http_service("serve2",max_batch_size=3)
 serve.create_no_http_service("serve3",max_batch_size=5)
 
 # Link services and backends
@@ -87,7 +87,7 @@ pprint(dependency)
 node_list = dependency['node_order'][0]
 future_list = []
 pipeline_handle = serve.get_handle("pipeline1")
-for r in range(10):
+for r in range(8):
 	sent = {}
 	for n in node_list:
 		sent[n] = "INP-{}".format(r)
