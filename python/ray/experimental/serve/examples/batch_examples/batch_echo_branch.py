@@ -7,6 +7,7 @@ from ray.experimental import serve
 from ray.experimental.serve.utils import pformat_color_json
 import json
 from pprint import pprint
+import ray
 def echo1(*context):
 	batch_size = len(context[0])
 	result = []
