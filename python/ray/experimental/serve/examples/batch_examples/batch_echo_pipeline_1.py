@@ -77,7 +77,7 @@ time.sleep(2)
 
 
 
-def client()
+def client():
 	while True:
 	    resp = requests.get("http://127.0.0.1:8000/echo").json()
 	    print(pformat_color_json(resp))
