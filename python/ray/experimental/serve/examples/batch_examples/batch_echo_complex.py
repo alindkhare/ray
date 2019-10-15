@@ -11,7 +11,9 @@ import ray
 def echo1(*context):
 	result = []
 	batch_size = len(context[0])
-	time.sleep(5)
+	# time.sleep(5)
+	for val in context:
+		assert len(val) == batch_size
 	for i in range(batch_size):
 		start = "[ "
 		for val in context:
