@@ -10,19 +10,19 @@ import json
 def echo1(context):
 	message = ""
 	message += 'FROM MODEL1 -> '
-	return message
+	return [message]
 def echo2(context):
 	# data_from_service1 = context['serve1']
 	message = ""
 	message += 'FROM MODEL2 -> '
-	return message
+	return [message]
 
 def echo3(a,b):
-	data_from_service1 = a
-	data_from_service2 = b
+	data_from_service1 = a[0]
+	data_from_service2 = b[0]
 	data = '[ ' + data_from_service1 + ',' + data_from_service2 + '] ->'
 	data += 'FROM MODEL3 -> '
-	return data
+	return [data]
 
 serve.init(blocking=True)
 

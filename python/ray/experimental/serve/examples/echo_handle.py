@@ -8,9 +8,9 @@ from ray.experimental.serve.utils import pformat_color_json
 import json
 from pprint import pprint
 def echo1(context):
-	message = context
+	message = context[0]
 	message += 'FROM MODEL1 -> '
-	return message
+	return [message]
 
 
 serve.init(blocking=True)
