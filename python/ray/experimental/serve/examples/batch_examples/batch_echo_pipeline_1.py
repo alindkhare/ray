@@ -10,6 +10,7 @@ import json
 def echo1(context):
 	result = []
 	batch_size = len(context)
+	time.sleep(5)
 	for i in range(batch_size):
 		message = ""
 		message += 'FROM MODEL1/BS-{} -> '.format(batch_size)
@@ -18,6 +19,7 @@ def echo1(context):
 def echo2(context):
 	result = []
 	batch_size = len(context)
+	time.sleep(5)
 	for i in range(batch_size):
 		message = context[i]
 		message += 'FROM MODEL2/BS-{} -> '.format(batch_size)
@@ -27,6 +29,7 @@ def echo2(context):
 def echo3(context):
 	result = []
 	batch_size = len(context)
+	time.sleep(5)
 	for i in range(batch_size):
 		message = context[i]
 		message += 'FROM MODEL3/BS-{} -> '.format(batch_size)
