@@ -219,4 +219,4 @@ class HTTPActor:
         self.app = HTTPProxy(kv_store_actor_handle,kv_store_actor_pipeline_handle,router_handle)
 
     def run(self, host="0.0.0.0", port=8000):
-        uvicorn.run(self.app, host=host, port=port,workers=7,lifespan="on")
+        uvicorn.run(self.app, host=host, port=port,lifespan="on")
