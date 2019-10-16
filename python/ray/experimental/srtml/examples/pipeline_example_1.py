@@ -1,6 +1,6 @@
 from ray.experimental import serve
 from ray.experimental import srtml
-
+import ray
 '''
 A hello world example for pipeline provisioning. 
 '''
