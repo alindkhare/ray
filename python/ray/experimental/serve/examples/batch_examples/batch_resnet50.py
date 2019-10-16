@@ -23,7 +23,7 @@ class Transform:
 		batch_size = len(batch_data)
 		result = []
 		for i in range(batch_size):
-			data = Image.open(io.BytesIO(base64.b64decode(data)))
+			data = Image.open(io.BytesIO(base64.b64decode(batch_data[i])))
 			if data.mode != "RGB":
 				data = data.convert("RGB")
 			data = self.transform(data)
