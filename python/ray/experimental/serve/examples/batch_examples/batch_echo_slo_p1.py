@@ -12,7 +12,7 @@ import random
 def echo1(context):
 	result = []
 	batch_size = len(context)
-	time.sleep(5)
+	# time.sleep(5)
 	for i in range(batch_size):
 		message = ""
 		message += 'FROM MODEL1/BS-{} -> '.format(batch_size)
@@ -21,7 +21,7 @@ def echo1(context):
 def echo2(context):
 	result = []
 	batch_size = len(context)
-	time.sleep(5)
+	# time.sleep(5)
 	for i in range(batch_size):
 		message = context[i]
 		message += 'FROM MODEL2/BS-{} -> '.format(batch_size)
@@ -31,7 +31,7 @@ def echo2(context):
 def echo3(context):
 	result = []
 	batch_size = len(context)
-	time.sleep(5)
+	# time.sleep(5)
 	for i in range(batch_size):
 		message = context[i]
 		message += 'FROM MODEL3/BS-{} -> '.format(batch_size)
@@ -82,11 +82,15 @@ for i in range(10):
 	args['slo'] = 1000*(1+i)
 	f = pipeline_handle.remote(**args)
 	futures.append(f)
-results = ray.get(futures)
-for result in results:
-	#slo time is in milliseconds
-	print("------------------------------")
-	print(result)
+# results = ray.get(futures)
+left_futures = futures
+while left_futures:
+	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
+	if len(completed_futures) > 0:
+		result = ray.get(completed_futures)
+		print("--------------------------------")
+		print(result)
+	left_futures = remaining_futures
 # time.sleep(2)
 
 
