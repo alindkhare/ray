@@ -14,8 +14,8 @@ def echo1(context):
 	batch_size = len(context)
 	# time.sleep(5)
 	for i in range(batch_size):
-		message = ""
-		message += 'FROM MODEL1/BS-{} -> '.format(batch_size)
+		message = context[i]
+		message += ' : FROM MODEL1/BS-{} -> '.format(batch_size)
 		result.append(message)
 	return result
 def echo2(context):
@@ -75,10 +75,11 @@ serve.provision_pipeline("pipeline1")
 # You can only create an endpoint for pipeline after provisioning the pipeline
 # serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
 pipeline_handle = serve.get_handle("pipeline1")
-args = {"serve1": "Intial Data --> "}
+
 futures = []
 for i in range(10):
 	# slo = random.random()*100  
+	args = {"serve1": "INP: {} --> ".format(i)}
 	args['slo'] = 1000*(1+i)
 	f = pipeline_handle.remote(**args)
 	futures.append(f)
