@@ -234,7 +234,7 @@ for r in range(12):
 	sent = {}
 	for n in node_list:
 		sent[n] = "INP-{}".format(r)
-	sent['slo'] = 100 + r
+	sent['slo'] = 10000 + 1000*r
 	f = pipeline_handle.remote(**sent)
 	future_list.append(f)
 
