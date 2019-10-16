@@ -1,5 +1,5 @@
 from ray.experimental import serve
-from ray.experimental import srtml
+from ray.experimental.srtml import *
 import time
 import torch
 import base64
@@ -14,15 +14,17 @@ Lazy provisioning of pipeline helps in checking for checks.
 
 serve.init(object_store_memory=int(1e9))
 
-transform_model = srtml.AbstractModel("imagenet-transform",output_shape=(3,224,224),input_type=str,output_type=torch.Tensor,num_inputs=1)
-resnet_model = srtml.AbstractModel("imagenet-resnet",input_shape=(3,224,224),input_type=torch.Tensor,output_type=int,num_inputs=1)
+transform_type = AbstractModelType(output_shape=(3,224,224),input_type=str,output_type=torch.Tensor,num_inputs=1)
+transform_model = AbstractModel(feature="imagenet-transform",model_type=transform_type)
 
-classification_p = srtml.Pipeline()
+resnet_type = AbstractModelType(input_shape=(3,224,224),input_type=torch.Tensor,output_type=list,num_inputs=1)
+resnet_model = AbstractModel(feature="imagenet-resnet",model_type=resnet_type)
+
+classification_p = Pipeline()
 classification_p.add_dependency(transform_model,resnet_model)
 
 classification_p.provision_pipeline()
-# http_address = classification_p.http()
-# time.sleep(2)
+
 
 future_list = []
 for r in range(10):

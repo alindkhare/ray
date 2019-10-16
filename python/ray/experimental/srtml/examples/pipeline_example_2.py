@@ -1,27 +1,31 @@
 from ray.experimental import serve
-from ray.experimental import srtml
+from ray.experimental.srtml import *
 import time
 import ray
 
 
 serve.init()
-model1 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=1)
+num_input_1_type = AbstractModelType(input_type=str,output_type=str,num_inputs=1)
+num_input_2_type = AbstractModelType(input_type=str,output_type=str,num_inputs=2)
+num_input_3_type = AbstractModelType(input_type=str,output_type=str,num_inputs=3)
 
-model2 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=1)
-model3 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=1)
+model1 = AbstractModel(feature="complex-echo",model_type=num_input_1_type)
 
-model4 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=2)
-model5 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=3)
-model6 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=1)
-model7 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=1)
+model2 = AbstractModel(feature="complex-echo",model_type=num_input_1_type)
+model3 = AbstractModel(feature="complex-echo",model_type=num_input_1_type)
 
-model8 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=2)
-model9 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=2)
+model4 = AbstractModel(feature="complex-echo",model_type=num_input_2_type)
+model5 = AbstractModel(feature="complex-echo",model_type=num_input_3_type)
+model6 = AbstractModel(feature="complex-echo",model_type=num_input_1_type)
+model7 = AbstractModel(feature="complex-echo",model_type=num_input_1_type)
 
-model10 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=2)
+model8 = AbstractModel(feature="complex-echo",model_type=num_input_2_type)
+model9 = AbstractModel(feature="complex-echo",model_type=num_input_2_type)
+
+model10 = AbstractModel(feature="complex-echo",model_type=num_input_2_type)
 
 
-pipeline = srtml.Pipeline()
+pipeline = Pipeline()
 
 pipeline.add_dependency(model1,model2)
 pipeline.add_dependency(model1,model3)

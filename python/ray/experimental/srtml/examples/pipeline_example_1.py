@@ -1,5 +1,5 @@
 from ray.experimental import serve
-from ray.experimental import srtml
+from ray.experimental.srtml import *
 import ray
 '''
 A hello world example for pipeline provisioning. 
@@ -7,9 +7,12 @@ A hello world example for pipeline provisioning.
 
 
 serve.init()
-model1 = srtml.AbstractModel("echo",input_type=str,output_type=str,num_inputs=1)
-model2 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str)
-pipeline = srtml.Pipeline()
+
+model_type = AbstractModelType(input_type=str,output_type=str,num_inputs=1)
+model1 = AbstractModel(feature="echo",model_type=model_type)
+model2 = AbstractModel(feature="complex-echo",model_type=model_type)
+
+pipeline = Pipeline()
 pipeline.add_dependency(model1,model2)
 pipeline.provision_pipeline()
 future_list = []

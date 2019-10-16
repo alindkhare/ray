@@ -1,31 +1,34 @@
 from ray.experimental import serve
 import uuid
 
-class AbstractModel:
-	def __init__(self,feature,input_shape='?',output_shape='?',input_type='?',output_type='?',num_inputs='?'):
-		self.feature = feature
+class AbstractModelType:
+	def __init__(self,input_shape='?',output_shape='?',input_type='?',output_type='?',num_inputs='?'):
 		self.num_inputs = num_inputs
 		self.input_shape = input_shape
 		self.output_shape = output_shape
 		self.input_type = input_type
 		self.output_type = output_type
+	def get_config(self):
+		d = {
+			'input_shape' : self.input_shape,
+			'output_shape' : self.output_shape,
+			'input_type' : self.input_type,
+			'output_type' : self.output_type,
+			'num_inputs' : self.num_inputs
+			}
+		return d
+
+class AbstractModel:
+	def __init__(self,feature,model_type):
+		self.feature = feature
+		self.model_type = model_type
 		self.service_name = uuid.uuid1().hex
-		# serve.create_no_http_service(self.service_name)
 		self.is_linked = False
 		self.backends = []
 		# self.link_model()
 	
 	def get_config(self):
-		# if self.is_linked:
-		d = {
-			'input_shape' : self.input_shape,
-			 'output_shape' : self.output_shape,
-			 'input_type' : self.input_type,
-			 'output_type' : self.output_type,
-			 'num_inputs' : self.num_inputs
-			}
-		return d
-		# return None
+		self.model_type.get_config()
 
 	'''
 	Currently this function is hard-coded

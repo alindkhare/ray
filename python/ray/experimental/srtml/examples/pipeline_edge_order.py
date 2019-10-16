@@ -1,5 +1,5 @@
 from ray.experimental import serve
-from ray.experimental import srtml
+from ray.experimental.srtml import *
 import time
 import ray
 '''
@@ -9,14 +9,19 @@ An example showing srtml pipeline preserves the order of edge insertions.
 serve.init()
 
 
-model1 = srtml.AbstractModel("echo",input_type=str,output_type=str,num_inputs=1)
-model2 = srtml.AbstractModel("echo",input_type=str,output_type=str,num_inputs=1)
-model3 = srtml.AbstractModel("complex-echo",input_type=str,output_type=str,num_inputs=2)
+model1_type = AbstractModelType(input_type=str,output_type=str,num_inputs=1)
+model1 = AbstractModel(feature="echo",model_type=model1_type)
+
+# model2_type = AbstractModelType(input_type=str,output_type=str,num_inputs=1)
+model2 = AbstractModel(feature="echo",model_type=model1_type)
+
+model3_type = AbstractModelType(input_type=str,output_type=str,num_inputs=2)
+model3 = AbstractModel(feature="complex-echo",model_type=model3_type)
 
 
 
-pipeline1 = srtml.Pipeline()
-pipeline2 = srtml.Pipeline()
+pipeline1 = Pipeline()
+pipeline2 = Pipeline()
 
 pipeline1.add_dependency(model1,model3)
 pipeline1.add_dependency(model2,model3)
