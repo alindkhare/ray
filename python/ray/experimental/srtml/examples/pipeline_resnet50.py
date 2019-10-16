@@ -5,7 +5,7 @@ import torch
 import base64
 import requests
 from ray.experimental.serve.utils import pformat_color_json
-
+import ray
 
 '''
 An example showing error thrown because model3 excepts only one input. 
@@ -21,18 +21,21 @@ classification_p = srtml.Pipeline()
 classification_p.add_dependency(transform_model,resnet_model)
 
 classification_p.provision_pipeline()
-http_address = classification_p.http()
-time.sleep(2)
+# http_address = classification_p.http()
+# time.sleep(2)
 
-while True:
+future_list = []
+for r in range(10):
+	slo = 1000 + 100*r
 	data = base64.b64encode(open('elephant.jpg', "rb").read())
-
-	data = classification_p.get_http_formatted_data(data)
-
-	resp = requests.post(http_address,data = data).json()
-	print(pformat_color_json(resp))
-
-	print("...Sleeping for 2 seconds...")
-	time.sleep(2)
-
+	f = classification_p.remote(data,slo=slo)
+	future_list.append(f)
+left_futures = future_list
+while left_futures:
+	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
+	if len(completed_futures) > 0:
+		result = ray.get(completed_futures)
+		print("--------------------------------")
+		print(result)
+	left_futures = remaining_futures
 
