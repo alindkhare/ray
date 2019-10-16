@@ -48,9 +48,9 @@ serve.create_backend(echo2, "echo:v2",num_gpu=0)
 serve.create_backend(echo3,"echo:v3",num_gpu=0)
 
 # Create services
-serve.create_no_http_service("serve1",max_batch_size=5)
-serve.create_no_http_service("serve2",max_batch_size=4)
-serve.create_no_http_service("serve3",max_batch_size=3)
+serve.create_no_http_service("serve1",max_batch_size=2)
+serve.create_no_http_service("serve2",max_batch_size=2)
+serve.create_no_http_service("serve3",max_batch_size=2)
 
 # Link services and backends
 serve.link_service("serve1", "echo:v1")
@@ -77,9 +77,9 @@ serve.provision_pipeline("pipeline1")
 pipeline_handle = serve.get_handle("pipeline1")
 args = {"serve1": "Intial Data --> "}
 futures = []
-for i in range(8):
-	slo = random.random()*100  
-	args['slo'] = slo
+for i in range(10):
+	# slo = random.random()*100  
+	args['slo'] = 1000*(1+i)
 	f = pipeline_handle.remote(**args)
 	futures.append(f)
 results = ray.get(futures)
