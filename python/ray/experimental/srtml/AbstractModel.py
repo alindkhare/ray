@@ -12,7 +12,7 @@ class AbstractModel:
 		# serve.create_no_http_service(self.service_name)
 		self.is_linked = False
 		self.backends = []
-		self.link_model()
+		# self.link_model()
 	
 	def get_config(self):
 		if self.is_linked:
@@ -33,21 +33,28 @@ class AbstractModel:
 		if self.feature == "echo":
 			backend_name = uuid.uuid4().hex
 			def echo1(context):
-				message = context
-				message += ' FROM MODEL ({}/{}) -> '.format(self.feature,backend_name)
-				return message
+				result = []
+				batch_size = len(context)
+				for i in range(batch_size):
+					message = context[i]
+					message += 'FROM MODEL ({}/BS_{}/{}) -> '.format(self.feature,batch_size,backend_name)
+					result.append(message)
+				return result
 			return backend_name,echo1,None,0
 		elif self.feature == "complex-echo":
 			backend_name = uuid.uuid4().hex
 			def echoC(*context):
-				start = "[ "
-				for val in context:
-					start =  start + val + " , "
-				start += " ] --> "
-				message = start
-				# message = ""
-				message += 'FROM MODEL ({}/{}) -> '.format(self.feature,backend_name)
-				return message
+				batch_size = len(context[0])
+				result = []
+				for i in range(batch_size):
+					start = "[ "
+					for val in context:
+						start =  start + val[i] + " , "
+						# message += ' FROM MODEL1 -> '
+					start += " ] --> "
+					start += 'FROM MODEL ({}/BS_{}/{}) -> '.format(self.feature,batch_size,backend_name)
+					result.append(start)
+				return result
 			return backend_name,echoC,None,0
 		elif self.feature == "imagenet-transform":
 			import torchvision.transforms as transforms
@@ -58,13 +65,17 @@ class AbstractModel:
 			class Transform:
 				def __init__(self,transform):
 					self.transform = transform
-				def __call__(self,data):
-					data = Image.open(io.BytesIO(base64.b64decode(data)))
-					if data.mode != "RGB":
-						data = data.convert("RGB")
-					data = self.transform(data)
-					data = data.unsqueeze(0)
-					return data
+				def __call__(self,batch_data):
+					batch_size = len(batch_data)
+					result = []
+					for i in range(batch_size):
+						data = Image.open(io.BytesIO(base64.b64decode(batch_data[i])))
+						if data.mode != "RGB":
+							data = data.convert("RGB")
+						data = self.transform(data)
+						# data = data.unsqueeze(0)
+						result.append(data)
+					return result
 
 			min_img_size = 224
 			transform = transforms.Compose([transforms.Resize(min_img_size),
@@ -76,31 +87,35 @@ class AbstractModel:
 		elif self.feature == "imagenet-resnet":
 			from torch.autograd import Variable
 			from torchvision.models.resnet import resnet50
+			import torch
 			backend_name = uuid.uuid4().hex
-			class Resnet50:
+			class PredictModelPytorch:
 				def __init__(self, model):
 					self.model = model
 
-				def __call__(self, data):
+				def __call__(self, batch_data):
 					# if 'transform' in context:
 					# data = context['transform']
+					data = torch.stack(batch_data)
 					data = Variable(data)
 					data = data.cuda()
-					return self.model(data).data.cpu().numpy().argmax()
+					outputs = self.model(data)
+					_, predicted = outputs.max(1)
+					return predicted.cpu().numpy().tolist()
 
 			model = resnet50(pretrained=True)
 			model = model.cuda()
 
-			return backend_name,Resnet50,[model],1
+			return backend_name,PredictModelPytorch,[model],1
 		return None
 
 	def get_backend(self):
 		if self.is_linked:
 			return self.backends
-	def link_model(self):
+	def link_model(self,max_batch_size=1):
 		backend_info = self.find_backends()
 		if backend_info is not None:
-			serve.create_no_http_service(self.service_name)
+			serve.create_no_http_service(self.service_name,max_batch_size=max_batch_size)
 			backend_name,cls_or_func,args,num_gpu = backend_info
 			if args is None:
 				serve.create_backend(cls_or_func, backend_name,num_gpu=num_gpu)

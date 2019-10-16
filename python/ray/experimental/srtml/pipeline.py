@@ -68,6 +68,8 @@ class Pipeline:
 
 	def provision_pipeline(self):
 		if not self.provisioned:
+			for abstract_model in self.abstract_models_obj:
+				self.abstract_models_obj[abstract_model].link_model(max_batch_size=4)
 			for service1 in self.inverted_service_dependency.keys():
 				directed_edges = self.inverted_service_dependency[service1]
 				for service2 in directed_edges:
@@ -78,12 +80,14 @@ class Pipeline:
 			self.pipeline_handle = serve.get_handle(self.pipeline_name)
 			self.provisioned = True
 
-	def remote(self,data):
+	def remote(self,data,slo=None):
 		if self.provisioned:
 			node_list = self.pipeline_info['node_order'][0]
 			sent = {}
 			for n in node_list:
 				sent[n] = data
+			if slo is not None:
+				sent['slo'] = slo
 			return self.pipeline_handle.remote(**sent)
 	def http(self,route=None):
 		if self.provisioned and not self.http_served:
