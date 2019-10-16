@@ -58,7 +58,7 @@ print("PIPELINE-2 ##############################################################
 future_list = []
 for r in range(10):
 	slo = 1000 - 100*r
-	f = pipeline2.remote("INP-{}".format(r)e,slo=slo)
+	f = pipeline2.remote("INP-{}".format(r),slo=slo)
 	future_list.append(f)
 left_futures = future_list
 while left_futures:
