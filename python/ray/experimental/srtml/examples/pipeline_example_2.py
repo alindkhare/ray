@@ -1,7 +1,7 @@
 from ray.experimental import serve
 from ray.experimental import srtml
 import time
-
+import ray
 
 
 serve.init()
