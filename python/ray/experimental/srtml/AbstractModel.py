@@ -46,9 +46,11 @@ class AbstractModel:
 			return backend_name,echo1,None,0
 		elif self.feature == "complex-echo":
 			backend_name = uuid.uuid4().hex
+			import time
 			def echoC(*context):
 				batch_size = len(context[0])
 				result = []
+				time.sleep(2)
 				for i in range(batch_size):
 					start = "[ "
 					for val in context:
