@@ -93,7 +93,7 @@ for r in range(12):
 	q = query()
 	q['slo'] = 70
 	q['index'] = r
-	req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()) }
+	req_json = { "transform": base64.b64encode(open('../elephant.jpg', "rb").read()) }
 	req_json['slo'] = q['slo']
 	q['start_time'] = time.time()
 	f = pipeline_handle.remote(**req_json)
