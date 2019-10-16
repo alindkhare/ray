@@ -243,7 +243,7 @@ for r in range(12):
 # 	print(result)
 left_futures = future_list
 while left_futures:
-	completed_futures , remaining_futures = ray.wait(left_futures,timeout=3)
+	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
 	if len(completed_futures) > 0:
 		result = ray.get(completed_futures)
 		print("--------------------------------")
