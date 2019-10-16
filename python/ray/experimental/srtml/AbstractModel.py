@@ -37,7 +37,7 @@ class AbstractModel:
 				batch_size = len(context)
 				for i in range(batch_size):
 					message = context[i]
-					message += 'FROM MODEL ({}/BS_{}/{}) -> '.format(self.feature,batch_size,backend_name)
+					message += ' FROM MODEL ({}/BS_{}/{}) -> '.format(self.feature,batch_size,backend_name)
 					result.append(message)
 				return result
 			return backend_name,echo1,None,0

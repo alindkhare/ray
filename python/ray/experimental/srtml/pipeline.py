@@ -65,7 +65,7 @@ class Pipeline:
 
 	def provision_pipeline(self):
 		if not self.provisioned:
-			for abstract_model in self.abstract_models_obj:
+			for abstract_model in self.abstract_models_obj.keys():
 				self.abstract_models_obj[abstract_model].link_model(max_batch_size=4)
 			for service1 in self.inverted_service_dependency.keys():
 				directed_edges = self.inverted_service_dependency[service1]
