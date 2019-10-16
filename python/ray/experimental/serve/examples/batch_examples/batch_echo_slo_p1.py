@@ -80,7 +80,7 @@ futures = []
 for i in range(10):
 	# slo = random.random()*100  
 	args = {"serve1": "INP: {} --> ".format(i)}
-	args['slo'] = 1000 + 100*i
+	args['slo'] = 1000 - 100*i
 	f = pipeline_handle.remote(**args)
 	futures.append(f)
 # results = ray.get(futures)
