@@ -28,7 +28,7 @@ class AbstractModel:
 		# self.link_model()
 	
 	def get_config(self):
-		self.model_type.get_config()
+		return self.model_type.get_config()
 
 	'''
 	Currently this function is hard-coded
