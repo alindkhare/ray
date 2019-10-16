@@ -234,13 +234,10 @@ for r in range(12):
 	sent = {}
 	for n in node_list:
 		sent[n] = "INP-{}".format(r)
-	sent['slo'] = 100 - r
+	sent['slo'] = 100 + r
 	f = pipeline_handle.remote(**sent)
 	future_list.append(f)
-# results = ray.get(future_list)
-# for result in results:
-# 	print("--------------------------------")
-# 	print(result)
+
 left_futures = future_list
 while left_futures:
 	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
@@ -249,14 +246,3 @@ while left_futures:
 		print("--------------------------------")
 		print(result)
 	left_futures = remaining_futures
-# # You can only create an endpoint for pipeline after provisioning the pipeline
-# serve.create_endpoint_pipeline("pipeline1", "/echo", blocking=True)
-
-# time.sleep(2)
-
-# while True:
-#     resp = requests.get("http://127.0.0.1:8000/echo").json()
-#     print(pformat_color_json(resp))
-
-#     print("...Sleeping for 2 seconds...")
-#     time.sleep(2)
