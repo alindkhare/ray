@@ -50,6 +50,20 @@ pipeline.add_dependency(model9,model10)
 
 
 pipeline.provision_pipeline()
-time.sleep(1)
-result = pipeline.remote("INP")
-print(result)
+# time.sleep(1)
+future_list = []
+for r in range(10):
+	slo = 1000 + 100*r
+	f = pipeline.remote("INP-{}".format(r),slo=slo)
+	future_list.append(f)
+left_futures = future_list
+while left_futures:
+	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
+	if len(completed_futures) > 0:
+		result = ray.get(completed_futures)
+		print("--------------------------------")
+		print(result)
+	left_futures = remaining_futures
+
+# result = pipeline.remote("INP")
+# print(result)
