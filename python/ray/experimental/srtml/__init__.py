@@ -4,4 +4,4 @@ if sys.version_info < (3, 0):
 from ray.experimental.srtml.AbstractModel import AbstractModel
 from ray.experimental.srtml.AbstractModel import AbstractModelType
 from ray.experimental.srtml.pipeline import Pipeline
-__all__ = ["AbstractModel","Pipeline"]
+__all__ = ["AbstractModel","Pipeline","AbstractModelType"]
