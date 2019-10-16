@@ -35,6 +35,7 @@ class AbstractModel:
 			def echo1(context):
 				result = []
 				batch_size = len(context)
+				time.sleep(3)
 				for i in range(batch_size):
 					message = context[i]
 					message += ' FROM MODEL ({}/BS_{}/{}) -> '.format(self.feature,batch_size,backend_name)
@@ -112,7 +113,7 @@ class AbstractModel:
 	def get_backend(self):
 		if self.is_linked:
 			return self.backends
-	def link_model(self,max_batch_size=1):
+	def link_model(self,max_batch_size):
 		backend_info = self.find_backends()
 		if backend_info is not None:
 			serve.create_no_http_service(self.service_name,max_batch_size=max_batch_size)

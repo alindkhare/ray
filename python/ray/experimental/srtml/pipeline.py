@@ -68,7 +68,7 @@ class Pipeline:
 			for abstract_model in self.abstract_models_obj.keys():
 				model = self.abstract_models_obj[abstract_model]
 				if not model.is_linked:
-					model.link_model(max_batch_size=2)
+					model.link_model(max_batch_size=3)
 			for service1 in self.inverted_service_dependency.keys():
 				directed_edges = self.inverted_service_dependency[service1]
 				for service2 in directed_edges:
