@@ -18,10 +18,7 @@ class Pipeline:
 	def fill_config(self,model):
 		if not self.provisioned:
 			config = model.get_config()
-			if config is not None:
-				self.abstract_models_config[model.service_name] = config
-			else:
-				raise Exception('AbstractModel has no backend!')
+			self.abstract_models_config[model.service_name] = config
 
 	def add_model(self,model):
 		if not self.provisioned:

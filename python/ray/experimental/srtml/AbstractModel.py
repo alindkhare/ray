@@ -15,16 +15,16 @@ class AbstractModel:
 		# self.link_model()
 	
 	def get_config(self):
-		if self.is_linked:
-			d = {
-				'input_shape' : self.input_shape,
-				 'output_shape' : self.output_shape,
-				 'input_type' : self.input_type,
-				 'output_type' : self.output_type,
-				 'num_inputs' : self.num_inputs
-				}
-			return d
-		return None
+		# if self.is_linked:
+		d = {
+			'input_shape' : self.input_shape,
+			 'output_shape' : self.output_shape,
+			 'input_type' : self.input_type,
+			 'output_type' : self.output_type,
+			 'num_inputs' : self.num_inputs
+			}
+		return d
+		# return None
 
 	'''
 	Currently this function is hard-coded
