@@ -23,7 +23,7 @@ class RequestRecorder:
 		self.timing_stats = {}
 		self.pending_futures = []
 	async def examine_futures(self):
-		# await asyncio.sleep(0.05)
+		await asyncio.sleep(0.5)
 		print("Started")
 		while True:
 
