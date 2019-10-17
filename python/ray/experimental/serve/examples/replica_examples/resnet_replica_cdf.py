@@ -24,7 +24,9 @@ class RequestRecorder:
 		self.pending_futures = []
 	async def examine_futures(self):
 		# await asyncio.sleep(0.05)
+		print("Started")
 		while True:
+
 			# await asyncio.sleep(0.5)
 			new_pending_futures = []
 			if self.queue.qsize() > 0:
@@ -43,6 +45,7 @@ class RequestRecorder:
 				f = completed_futures[0]
 				self.timing_stats[f] = time.time()
 			self.pending_futures = remaining_futures
+		print("ended")
 		return
 
 
@@ -146,6 +149,7 @@ for q in query_list:
 	associated_query[f] = q
 	future_queue.put_nowait(f)
 
+print("Queuing of request is done!")
 loop.run_until_complete(asyncio.wait([task]))
 loop.close()
 
