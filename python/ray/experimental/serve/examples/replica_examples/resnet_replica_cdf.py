@@ -40,7 +40,7 @@ class RequestRecorder:
 					break
 			self.pending_futures = self.pending_futures + new_pending_futures
 			# print("PENDING FUTURES: {}".format(self.pending_futures))
-			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.009)
+			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.09)
 			if len(completed_futures) == 1:
 				f = completed_futures[0]
 				self.timing_stats[f] = time.time()
@@ -129,7 +129,7 @@ future_list = []
 query_list = []
 query_list = []
 
-for r in range(12):
+for r in range(2):
 	q = query()
 	q['slo'] = 70
 	q['index'] = r
