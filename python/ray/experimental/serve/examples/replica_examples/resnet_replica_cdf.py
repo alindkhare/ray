@@ -15,13 +15,47 @@ import torchvision.transforms as transforms
 import base64
 from pprint import pprint
 import torch
+import asyncio
+import queue
+class RequestRecorder:
+	def __init__(self,queue):
+		self.queue = queue
+		self.timing_stats = {}
+		self.pending_futures = []
+	async def examine_future(self):
+		# await asyncio.sleep(0.05)
+		while True:
+			# await asyncio.sleep(0.5)
+			new_pending_futures = []
+			if self.queue.qsize() > 0:
+				while True:
+					item  = self.queue.get()
+					if item is None:
+						break
+					new_pending_futures.append(item)
+			else:
+				if len(self.pending_futures) == 0:
+					break
+			self.pending_futures = self.pending_futures + new_pending_futures
+			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.009)
+			if len(completed_futures) == 1:
+				f = completed_futures[0]
+				self.timing_stats[f] = time.time()
+			self.pending_futures = remaining_futures
+
+
+
+
+
+
 
 def query():
 	d = {
 	'index': '',
 	'start_time': '',
 	'end_time': '',
-	'slo': ''
+	'slo': '' ,
+	'data': ''
 	    }
 	return d
 
@@ -88,29 +122,48 @@ pipeline_handle = serve.get_handle("pipeline1")
 
 future_list = []
 query_list = []
-associated_query = {}
+query_list = []
+
 for r in range(12):
 	q = query()
 	q['slo'] = 70
 	q['index'] = r
 	req_json = { "transform": base64.b64encode(open('../elephant.jpg', "rb").read()) }
 	req_json['slo'] = q['slo']
+	q['data'] = req_json
+	query_list.append(q)
+
+future_queue = queue.Queue()
+reqRecord = RequestRecorder(queue=future_queue)
+associated_query = {}
+task = asyncio.ensure_future(reqRecord)
+for q in query_list:
 	q['start_time'] = time.time()
-	f = pipeline_handle.remote(**req_json)
+	f = pipeline_handle.remote(**q['data'])
 	associated_query[f] = q
-	future_list.append(f)
+	future_queue.put_nowait(f)
+
+await task
+for f in associated_query.keys():
+	val = associated_query[f]
+	end_time = reqRecord.timing_stats[f]
+	val['end_time'] = end_time
+for f in associated_query.keys():
+	print("-----------------")
+	val = associated_query[f]
+	print("Query Index: {} SLO: {} time taken: {}".format(val['index'],val['slo'],(val['end_time']-val['start_time'])*1000))
 # results = ray.get(future_list)
 # for result in results:
 # 	print("-----------------------------")
 # 	print(result)
-left_futures = future_list
-while left_futures:
-	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
-	if len(completed_futures) > 0:
-		result = ray.get(completed_futures)
-		associated_query[completed_futures[0]]['end_time'] = time.time()
-		print("--------------------------------")
-		print(result)
-	left_futures = remaining_futures
-pprint(associated_query)
+# left_futures = future_list
+# while left_futures:
+# 	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
+# 	if len(completed_futures) > 0:
+# 		result = ray.get(completed_futures)
+# 		associated_query[completed_futures[0]]['end_time'] = time.time()
+# 		print("--------------------------------")
+# 		print(result)
+# 	left_futures = remaining_futures
+# pprint(associated_query)
 
