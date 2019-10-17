@@ -23,7 +23,7 @@ class RequestRecorder:
 		self.timing_stats = {}
 		self.pending_futures = []
 	async def examine_futures(self):
-		await asyncio.sleep(0.09)
+		await asyncio.sleep(0.0009)
 		print("Started")
 		while True:
 
@@ -42,7 +42,7 @@ class RequestRecorder:
 					break
 			self.pending_futures = self.pending_futures + new_pending_futures
 			# print("PENDING FUTURES: {}".format(self.pending_futures))
-			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.009)
+			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.001)
 			if len(completed_futures) == 1:
 				f = completed_futures[0]
 				self.timing_stats[f] = time.time()
@@ -154,11 +154,9 @@ loop = asyncio.get_event_loop()
 task1 = asyncio.ensure_future(reqRecord.examine_futures())
 task2 = asyncio.ensure_future(send_queries(query_list,pipeline_handle,future_queue,associated_query))
 
-# print("Queuing of request is done!")
 loop.run_until_complete(asyncio.wait([task1,task2]))
 loop.close()
 
-# if task is done:
 for f in associated_query.keys():
 	val = associated_query[f]
 	end_time = reqRecord.timing_stats[f]
@@ -167,18 +165,5 @@ for f in associated_query.keys():
 	print("-----------------")
 	val = associated_query[f]
 	print("Query Index: {}  time taken (in seconds): {}".format(val['index'],(val['end_time']-val['start_time'])))
-# results = ray.get(future_list)
-# for result in results:
-# 	print("-----------------------------")
-# 	print(result)
-# left_futures = future_list
-# while left_futures:
-# 	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
-# 	if len(completed_futures) > 0:
-# 		result = ray.get(completed_futures)
-# 		associated_query[completed_futures[0]]['end_time'] = time.time()
-# 		print("--------------------------------")
-# 		print(result)
-# 	left_futures = remaining_futures
-# pprint(associated_query)
+
 
