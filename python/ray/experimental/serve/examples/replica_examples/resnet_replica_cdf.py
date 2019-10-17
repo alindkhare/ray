@@ -48,6 +48,13 @@ class RequestRecorder:
 		print("ended")
 		return
 
+async def send_queries(query_list,pipeline_handle,future_queue,associated_query):
+	for q in query_list:
+		q['start_time'] = time.time()
+		f = pipeline_handle.remote(**q['data'])
+		future_queue.put_nowait(f)
+		associated_query[f] = q
+	
 
 
 
@@ -142,15 +149,11 @@ future_queue = queue.Queue()
 reqRecord = RequestRecorder(queue=future_queue)
 associated_query = {}
 loop = asyncio.get_event_loop()
-task = asyncio.ensure_future(reqRecord.examine_futures())
-for q in query_list:
-	q['start_time'] = time.time()
-	f = pipeline_handle.remote(**q['data'])
-	associated_query[f] = q
-	future_queue.put_nowait(f)
+task1 = asyncio.ensure_future(reqRecord.examine_futures())
+task2 = asyncio.ensure_future(send_queries(query_list,pipeline_handle,future_queue,associated_query))
 
-print("Queuing of request is done!")
-loop.run_until_complete(asyncio.wait([task]))
+# print("Queuing of request is done!")
+loop.run_until_complete(asyncio.wait([task1,task2]))
 loop.close()
 
 # if task is done:
