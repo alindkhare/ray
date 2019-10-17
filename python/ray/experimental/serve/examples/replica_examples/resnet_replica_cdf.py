@@ -22,7 +22,7 @@ class RequestRecorder:
 		self.queue = queue
 		self.timing_stats = {}
 		self.pending_futures = []
-	async def examine_future(self):
+	async def examine_futures(self):
 		# await asyncio.sleep(0.05)
 		while True:
 			# await asyncio.sleep(0.5)
@@ -138,7 +138,7 @@ future_queue = queue.Queue()
 reqRecord = RequestRecorder(queue=future_queue)
 associated_query = {}
 loop = asyncio.get_event_loop()
-task = asyncio.ensure_future(reqRecord)
+task = asyncio.ensure_future(reqRecord.examine_futures())
 for q in query_list:
 	q['start_time'] = time.time()
 	f = pipeline_handle.remote(**q['data'])
