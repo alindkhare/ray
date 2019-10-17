@@ -30,17 +30,19 @@ class RequestRecorder:
 			# await asyncio.sleep(0.5)
 			new_pending_futures = []
 			if self.queue.qsize() > 0:
-				while not self.queue.empty():
-					item  = self.queue.get()
-					# if item is None:
-					# 	break
+				# while not self.queue.empty():
+				try:
+					item  = self.queue.get(block=True,timeout=0.09)
 					new_pending_futures.append(item)
+				except Exception:
+					break
+					
 			else:
 				if len(self.pending_futures) == 0:
 					break
 			self.pending_futures = self.pending_futures + new_pending_futures
 			# print("PENDING FUTURES: {}".format(self.pending_futures))
-			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.09)
+			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.009)
 			if len(completed_futures) == 1:
 				f = completed_futures[0]
 				self.timing_stats[f] = time.time()
