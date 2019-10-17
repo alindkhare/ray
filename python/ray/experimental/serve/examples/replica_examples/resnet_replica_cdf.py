@@ -32,7 +32,7 @@ class RequestRecorder:
 			if self.queue.qsize() > 0:
 				# while not self.queue.empty():
 				try:
-					item  = self.queue.get(block=True,timeout=0.09)
+					item  = self.queue.get(block=True,timeout=0.009)
 					new_pending_futures.append(item)
 				except Exception:
 					break
