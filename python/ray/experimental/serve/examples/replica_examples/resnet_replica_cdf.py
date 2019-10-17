@@ -23,7 +23,7 @@ class RequestRecorder:
 		self.timing_stats = {}
 		self.pending_futures = []
 	async def examine_futures(self):
-		await asyncio.sleep(0.5)
+		await asyncio.sleep(0.09)
 		print("Started")
 		while True:
 
@@ -136,7 +136,7 @@ future_list = []
 query_list = []
 query_list = []
 
-for r in range(2):
+for r in range(20):
 	q = query()
 	q['slo'] = 70
 	q['index'] = r
@@ -164,7 +164,7 @@ for f in associated_query.keys():
 for f in associated_query.keys():
 	print("-----------------")
 	val = associated_query[f]
-	print("Query Index: {} SLO: {} time taken: {}".format(val['index'],val['slo'],(val['end_time']-val['start_time'])*1000))
+	print("Query Index: {}  time taken (in seconds): {}".format(val['index'],(val['end_time']-val['start_time'])))
 # results = ray.get(future_list)
 # for result in results:
 # 	print("-----------------------------")
