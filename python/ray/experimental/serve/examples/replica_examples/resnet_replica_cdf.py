@@ -143,15 +143,17 @@ for q in query_list:
 	associated_query[f] = q
 	future_queue.put_nowait(f)
 
-await task
-for f in associated_query.keys():
-	val = associated_query[f]
-	end_time = reqRecord.timing_stats[f]
-	val['end_time'] = end_time
-for f in associated_query.keys():
-	print("-----------------")
-	val = associated_query[f]
-	print("Query Index: {} SLO: {} time taken: {}".format(val['index'],val['slo'],(val['end_time']-val['start_time'])*1000))
+done, pending = await asyncio.wait({task})
+
+if task is done:
+	for f in associated_query.keys():
+		val = associated_query[f]
+		end_time = reqRecord.timing_stats[f]
+		val['end_time'] = end_time
+	for f in associated_query.keys():
+		print("-----------------")
+		val = associated_query[f]
+		print("Query Index: {} SLO: {} time taken: {}".format(val['index'],val['slo'],(val['end_time']-val['start_time'])*1000))
 # results = ray.get(future_list)
 # for result in results:
 # 	print("-----------------------------")
