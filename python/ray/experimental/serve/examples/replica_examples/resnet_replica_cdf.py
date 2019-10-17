@@ -42,6 +42,7 @@ class RequestRecorder:
 				f = completed_futures[0]
 				self.timing_stats[f] = time.time()
 			self.pending_futures = remaining_futures
+		return
 
 
 
@@ -136,6 +137,7 @@ for r in range(12):
 future_queue = queue.Queue()
 reqRecord = RequestRecorder(queue=future_queue)
 associated_query = {}
+loop = asyncio.get_event_loop()
 task = asyncio.ensure_future(reqRecord)
 for q in query_list:
 	q['start_time'] = time.time()
@@ -143,7 +145,8 @@ for q in query_list:
 	associated_query[f] = q
 	future_queue.put_nowait(f)
 
-done, pending = await asyncio.wait({task})
+loop.run_until_complete(asyncio.wait([task]))
+loop.close()
 
 if task is done:
 	for f in associated_query.keys():
