@@ -86,7 +86,7 @@ class RayServeMixin:
         for work_item in work_item_list:
             result_object_id_list.append(work_item.result_object_id)
             if len(data_list) == 0:
-                data_list = [[] for x in range(len(work_item.request_body))]
+                data_list = [[] for _ in range(len(work_item.request_body))]
             data = None
             if type(work_item.request_body) is list:
                 future_list = work_item.request_body
