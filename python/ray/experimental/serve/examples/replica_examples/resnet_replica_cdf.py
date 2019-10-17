@@ -136,7 +136,7 @@ future_list = []
 query_list = []
 query_list = []
 
-for r in range(20):
+for r in range(40):
 	q = query()
 	q['slo'] = 70
 	q['index'] = r
