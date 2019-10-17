@@ -30,10 +30,10 @@ class RequestRecorder:
 			# await asyncio.sleep(0.5)
 			new_pending_futures = []
 			if self.queue.qsize() > 0:
-				while True:
+				while not self.queue.empty():
 					item  = self.queue.get()
-					if item is None:
-						break
+					# if item is None:
+					# 	break
 					new_pending_futures.append(item)
 			else:
 				if len(self.pending_futures) == 0:
