@@ -37,6 +37,7 @@ class RequestRecorder:
 				if len(self.pending_futures) == 0:
 					break
 			self.pending_futures = self.pending_futures + new_pending_futures
+			print("PENDING FUTURES: {}".format(self.pending_futures))
 			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.009)
 			if len(completed_futures) == 1:
 				f = completed_futures[0]
