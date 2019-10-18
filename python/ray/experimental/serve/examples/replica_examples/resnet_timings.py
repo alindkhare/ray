@@ -116,6 +116,9 @@ start = time.time()
 results = ray.get(future_list)
 end = time.time()
 print("Time taken: {}".format((end - start)))
+for result in results:
+	print("-----------------------------")
+	print(result)
 # left_futures = future_list
 # while left_futures:
 # 	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
