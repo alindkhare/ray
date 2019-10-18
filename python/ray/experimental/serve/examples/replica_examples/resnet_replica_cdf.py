@@ -29,16 +29,17 @@ def examine_futures(future_queue,timing_stats,num_q):
 			new_pending_futures = []
 			# if future_queue.qsize() > 0:
 				# while not self.queue.empty():
-			try:
-				item  = future_queue.get(block=True,timeout=0.0009)
-				new_pending_futures.append(item)
-				c += 1
-			except Exception:
-				pass
+			if future_queue.qsize() > 0:
+				try:
+					item  = future_queue.get(block=True,timeout=0.0009)
+					new_pending_futures.append(item)
+					c += 1
+				except Exception:
+					pass
 					
 					
 			
-			if len(pending_futures) == 0 and not c == num_q:
+			if len(pending_futures) == 0 and c == num_q:
 				break
 			pending_futures = pending_futures + new_pending_futures
 			if len(pending_futures) == 0:
@@ -157,7 +158,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 pool = ThreadPoolExecutor(2)
 # futures = []
 f1 = pool.submit(send_queries,query_list,pipeline_handle,future_queue,associated_query)
-f2 = pool.submit(examine_futures,future_queue,timing_stats,40)
+f2 = pool.submit(examine_futures,future_queue,timing_stats,len(query_list))
 wait([f1,f2])
 
 # task1 = asyncio.ensure_future(reqRecord.examine_futures())
