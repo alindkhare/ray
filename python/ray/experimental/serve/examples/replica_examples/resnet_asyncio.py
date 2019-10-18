@@ -104,7 +104,7 @@ async def fire_queries(start_time_d,end_time_d,num_q):
 
 loop.run_until_complete(fire_queries(start_time_d,end_time_d,num_q))
 
-for f in start_time.keys():
+for f in start_time_d.keys():
 	time_taken = end_time_d[f] - start_time_d[f]
 	print("Time taken : {}".format(time_taken))
 
