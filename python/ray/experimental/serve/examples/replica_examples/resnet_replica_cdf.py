@@ -41,7 +41,7 @@ def examine_futures(future_queue,timing_stats):
 					break
 			pending_futures = pending_futures + new_pending_futures
 			# print("PENDING FUTURES: {}".format(pending_futures))
-			completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.001)
+			completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.0001)
 			if len(completed_futures) == 1:
 				f = completed_futures[0]
 				timing_stats[f] = time.time()
