@@ -20,9 +20,9 @@ import queue
 
 def examine_futures(future_queue,timing_stats):
 		pending_futures = []
-		time.sleep(0.01)
+		# time.sleep(0.01)
 		print("Started")
-
+		c = 0
 		while True:
 
 			# await asyncio.sleep(0.5)
@@ -32,14 +32,15 @@ def examine_futures(future_queue,timing_stats):
 				try:
 					item  = future_queue.get(block=True,timeout=0.0009)
 					new_pending_futures.append(item)
+					c += 1
 				except Exception:
 					break
 					
 			else:
-				if len(pending_futures) == 0:
+				if len(pending_futures) == 0 and not c == 0:
 					break
 			pending_futures = pending_futures + new_pending_futures
-			# print("PENDING FUTURES: {}".format(self.pending_futures))
+			print("PENDING FUTURES: {}".format(self.pending_futures))
 			completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.001)
 			if len(completed_futures) == 1:
 				f = completed_futures[0]
