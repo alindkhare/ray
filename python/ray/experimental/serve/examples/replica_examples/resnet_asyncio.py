@@ -89,6 +89,7 @@ end_time_d = {}
 # futures = set()
 num_q = 1
 async def fire_queries(start_time_d,end_time_d,num_q):
+	await async_api._async_init()
 	futures = set()
 	for r in range(num_q):
 		req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()) }
