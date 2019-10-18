@@ -3,6 +3,7 @@ import queue
 import time
 import asyncio
 import functools
+from ray.experimental import async_api
 
 @ray.remote
 def simple_func():
