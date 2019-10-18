@@ -20,8 +20,9 @@ import queue
 
 def examine_futures(queue,timing_stats):
 		pending_futures = []
-
+		time.sleep(0.0001)
 		print("Started")
+
 		while True:
 
 			# await asyncio.sleep(0.5)
