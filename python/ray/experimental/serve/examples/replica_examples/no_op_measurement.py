@@ -20,9 +20,9 @@ def examine_futures(future_queue,timing_stats,num_q):
 		    c += 1
 		except Exception:
 		    pass
+		pending_futures = pending_futures + new_pending_futures
 		if len(pending_futures) == 0 and c == num_q:
 			break
-		pending_futures = pending_futures + new_pending_futures
 		if len(pending_futures) == 0:
 			continue
 		completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.0001)
