@@ -89,7 +89,7 @@ end_time_d = {}
 num_q = 40
 
 import concurrent.futures 
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=3) 
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=8) 
 
 async def fire_queries(start_time_d,end_time_d,num_q):
 	await async_api._async_init()
