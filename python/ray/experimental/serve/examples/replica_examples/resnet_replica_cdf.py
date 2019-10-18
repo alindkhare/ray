@@ -18,19 +18,19 @@ import torch
 import asyncio
 import queue
 
-def examine_futures(queue,timing_stats):
+def examine_futures(future_queue,timing_stats):
 		pending_futures = []
-		time.sleep(0.0001)
+		time.sleep(0.01)
 		print("Started")
 
 		while True:
 
 			# await asyncio.sleep(0.5)
 			new_pending_futures = []
-			if queue.qsize() > 0:
+			if future_queue.qsize() > 0:
 				# while not self.queue.empty():
 				try:
-					item  = queue.get(block=True,timeout=0.0009)
+					item  = future_queue.get(block=True,timeout=0.0009)
 					new_pending_futures.append(item)
 				except Exception:
 					break
