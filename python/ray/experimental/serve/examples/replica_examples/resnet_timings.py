@@ -117,8 +117,9 @@ while left_futures:
 	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
 	if len(completed_futures) > 0:
 		end_time = time.time()
-		query_stats[f]['end_time'] = end_time
 		f = completed_futures[0]
+		query_stats[f]['end_time'] = end_time
+		
 		# result = ray.get(f)
 		# print("--------------------------------")
 		# print(result)
