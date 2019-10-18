@@ -29,13 +29,13 @@ def examine_futures(future_queue,timing_stats,num_q):
 			new_pending_futures = []
 			# if future_queue.qsize() > 0:
 				# while not self.queue.empty():
-			if future_queue.qsize() > 0:
-				try:
-					item  = future_queue.get(block=True,timeout=0.0009)
-					new_pending_futures.append(item)
-					c += 1
-				except Exception:
-					pass
+			#if future_queue.qsize() > 0:
+			try:
+			    item  = future_queue.get(block=True,timeout=0.0009)
+			    new_pending_futures.append(item)
+			    c += 1
+			except Exception:
+			    pass
 					
 					
 			
