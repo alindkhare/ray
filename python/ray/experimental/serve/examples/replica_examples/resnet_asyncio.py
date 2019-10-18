@@ -102,7 +102,7 @@ async def fire_queries(start_time_d,end_time_d,num_q):
 		start_time_d[f] = start_time
 		futures.add(f)
 
-	# done, pending = await asyncio.wait(futures)
+	done, pending = await asyncio.wait(futures)
 	return
 
 loop.run_until_complete(fire_queries(start_time_d,end_time_d,num_q))
