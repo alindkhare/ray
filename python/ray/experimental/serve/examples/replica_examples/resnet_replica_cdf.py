@@ -27,14 +27,15 @@ def examine_futures(future_queue,timing_stats):
 
 			# await asyncio.sleep(0.5)
 			new_pending_futures = []
-			if future_queue.qsize() > 0:
+			# if future_queue.qsize() > 0:
 				# while not self.queue.empty():
-				try:
-					item  = future_queue.get(block=True,timeout=0.0009)
-					new_pending_futures.append(item)
-					c += 1
-				except Exception:
-					break
+			try:
+				item  = future_queue.get(block=True,timeout=0.0009)
+				new_pending_futures.append(item)
+				c += 1
+			except Exception:
+				pass
+					
 					
 			else:
 				if len(pending_futures) == 0 and not c == 0:
