@@ -100,7 +100,7 @@ for r in range(40):
 	q['data'] = req_json
 	query_list.append(q)
 for q in query_list:
-		q['start_time'] = time.time()
+		# q['start_time'] = time.time()
 		f = pipeline_handle.remote(**q['data'])
 		future_list.append(f)
 		# query_stats[f] = q
