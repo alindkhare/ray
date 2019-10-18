@@ -17,40 +17,37 @@ from pprint import pprint
 import torch
 import asyncio
 import queue
-class RequestRecorder:
-	def __init__(self,queue):
-		self.queue = queue
-		self.timing_stats = {}
-		self.pending_futures = []
-	async def examine_futures(self):
-		await asyncio.sleep(0.00009)
+
+def examine_futures(queue,timing_stats):
+		pending_futures = []
+
 		print("Started")
 		while True:
 
 			# await asyncio.sleep(0.5)
 			new_pending_futures = []
-			if self.queue.qsize() > 0:
+			if queue.qsize() > 0:
 				# while not self.queue.empty():
 				try:
-					item  = self.queue.get(block=True,timeout=0.0009)
+					item  = queue.get(block=True,timeout=0.0009)
 					new_pending_futures.append(item)
 				except Exception:
 					break
 					
 			else:
-				if len(self.pending_futures) == 0:
+				if len(pending_futures) == 0:
 					break
-			self.pending_futures = self.pending_futures + new_pending_futures
+			pending_futures = pending_futures + new_pending_futures
 			# print("PENDING FUTURES: {}".format(self.pending_futures))
-			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.001)
+			completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.001)
 			if len(completed_futures) == 1:
 				f = completed_futures[0]
-				self.timing_stats[f] = time.time()
-			self.pending_futures = remaining_futures
+				timing_stats[f] = time.time()
+			pending_futures = remaining_futures
 		print("ended")
 		return
 
-async def send_queries(query_list,pipeline_handle,future_queue,associated_query):
+def send_queries(query_list,pipeline_handle,future_queue,associated_query):
 	for q in query_list:
 		q['start_time'] = time.time()
 		f = pipeline_handle.remote(**q['data'])
@@ -148,18 +145,25 @@ for r in range(40):
 	query_list.append(q)
 
 future_queue = queue.Queue()
-reqRecord = RequestRecorder(queue=future_queue)
 associated_query = {}
-loop = asyncio.get_event_loop()
-task1 = asyncio.ensure_future(reqRecord.examine_futures())
-task2 = asyncio.ensure_future(send_queries(query_list,pipeline_handle,future_queue,associated_query))
+timing_stats = {}
+# loop = asyncio.get_event_loop()
+from concurrent.futures import ThreadPoolExecutor, wait, as_completed
+pool = ThreadPoolExecutor(2)
+# futures = []
+f1 = pool.starmap(send_queries,[(query_list,pipeline_handle,future_queue,associated_query)])
+f2 = pool.starmap(examine_futures,[(queue,timing_stats)])
+wait([f1,f2])
 
-loop.run_until_complete(asyncio.wait([task1,task2]))
-loop.close()
+# task1 = asyncio.ensure_future(reqRecord.examine_futures())
+# task2 = asyncio.ensure_future(send_queries(query_list,pipeline_handle,future_queue,associated_query))
+
+# loop.run_until_complete(asyncio.wait([task1,task2]))
+# loop.close()
 
 for f in associated_query.keys():
 	val = associated_query[f]
-	end_time = reqRecord.timing_stats[f]
+	end_time = timing_stats[f]
 	val['end_time'] = end_time
 for f in associated_query.keys():
 	print("-----------------")
