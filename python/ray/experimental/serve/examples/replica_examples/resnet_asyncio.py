@@ -86,16 +86,23 @@ def result_callback(future, d):
 loop = asyncio.get_event_loop()
 start_time_d = {}
 end_time_d = {}
-futures = set()
-for r in range(1):
-	req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()) }
-	start_time = time.time()
-	f = async_api.as_future(pipeline_handle.remote(**req_json))
-	f.add_done_callback(functools.partial(result_callback, d=end_time_d))
-	start_time_d[f] = start_time
-	futures.add(f)
+# futures = set()
+num_q = 1
+async def fire_queries(start_time_d,end_time_d,num_q):
+	futures = set()
+	for r in range(num_q):
+		req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()) }
+		start_time = time.time()
+		f = async_api.as_future(pipeline_handle.remote(**req_json))
+		f.add_done_callback(functools.partial(result_callback, d=end_time_d))
+		start_time_d[f] = start_time
+		futures.add(f)
 
-done, pending = await asyncio.wait(futures)
+	done, pending = await asyncio.wait(futures)
+	return
+
+loop.run_until_complete(fire_queries(start_time_d,end_time_d,num_q))
+
 for f in start_time.keys():
 	time_taken = end_time_d[f] - start_time_d[f]
 	print("Time taken : {}".format(time_taken))
