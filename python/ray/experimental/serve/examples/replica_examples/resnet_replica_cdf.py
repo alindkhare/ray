@@ -151,8 +151,8 @@ timing_stats = {}
 from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 pool = ThreadPoolExecutor(2)
 # futures = []
-f1 = pool.starmap(send_queries,query_list,pipeline_handle,future_queue,associated_query)
-f2 = pool.starmap(examine_futures,queue,timing_stats)
+f1 = pool.submit(send_queries,query_list,pipeline_handle,future_queue,associated_query)
+f2 = pool.submit(examine_futures,queue,timing_stats)
 wait([f1,f2])
 
 # task1 = asyncio.ensure_future(reqRecord.examine_futures())
