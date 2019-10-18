@@ -86,8 +86,11 @@ def result_callback(future, d):
 loop = asyncio.get_event_loop()
 start_time_d = {}
 end_time_d = {}
-# futures = set()
 num_q = 40
+
+import concurrent.futures 
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=3) 
+
 async def fire_queries(start_time_d,end_time_d,num_q):
 	await async_api._async_init()
 	futures = set()
@@ -99,7 +102,7 @@ async def fire_queries(start_time_d,end_time_d,num_q):
 		start_time_d[f] = start_time
 		futures.add(f)
 
-	done, pending = await asyncio.wait(futures)
+	# done, pending = await asyncio.wait(futures)
 	return
 
 loop.run_until_complete(fire_queries(start_time_d,end_time_d,num_q))
