@@ -18,7 +18,7 @@ import torch
 import asyncio
 import queue
 
-def examine_futures(future_queue,timing_stats):
+def examine_futures(future_queue,timing_stats,num_q):
 		pending_futures = []
 		# time.sleep(0.01)
 		print("Started")
@@ -37,10 +37,12 @@ def examine_futures(future_queue,timing_stats):
 				pass
 					
 					
-			else:
-				if len(pending_futures) == 0 and not c == 0:
-					break
+			
+			if len(pending_futures) == 0 and not c == num_q:
+				break
 			pending_futures = pending_futures + new_pending_futures
+			if len(pending_futures) == 0:
+				continue
 			# print("PENDING FUTURES: {}".format(pending_futures))
 			completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.0001)
 			if len(completed_futures) == 1:
@@ -155,7 +157,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 pool = ThreadPoolExecutor(2)
 # futures = []
 f1 = pool.submit(send_queries,query_list,pipeline_handle,future_queue,associated_query)
-f2 = pool.submit(examine_futures,future_queue,timing_stats)
+f2 = pool.submit(examine_futures,future_queue,timing_stats,40)
 wait([f1,f2])
 
 # task1 = asyncio.ensure_future(reqRecord.examine_futures())
