@@ -50,7 +50,7 @@ ray.init()
 from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 associated_query = {}
 timing_stats = {}
-num_q = 10
+num_q = 1000
 
 future_queue = queue.Queue()
 pool = ThreadPoolExecutor(2)
