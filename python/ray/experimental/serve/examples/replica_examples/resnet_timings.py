@@ -15,52 +15,6 @@ import torchvision.transforms as transforms
 import base64
 from pprint import pprint
 import torch
-import asyncio
-import queue
-class RequestRecorder:
-	def __init__(self,queue):
-		self.queue = queue
-		self.timing_stats = {}
-		self.pending_futures = []
-	async def examine_futures(self):
-		await asyncio.sleep(0.00009)
-		print("Started")
-		while True:
-
-			# await asyncio.sleep(0.5)
-			new_pending_futures = []
-			if self.queue.qsize() > 0:
-				# while not self.queue.empty():
-				try:
-					item  = self.queue.get(block=True,timeout=0.0009)
-					new_pending_futures.append(item)
-				except Exception:
-					break
-					
-			else:
-				if len(self.pending_futures) == 0:
-					break
-			self.pending_futures = self.pending_futures + new_pending_futures
-			# print("PENDING FUTURES: {}".format(self.pending_futures))
-			completed_futures , remaining_futures = ray.wait(self.pending_futures,timeout=0.001)
-			if len(completed_futures) == 1:
-				f = completed_futures[0]
-				self.timing_stats[f] = time.time()
-			self.pending_futures = remaining_futures
-		print("ended")
-		return
-
-async def send_queries(query_list,pipeline_handle,future_queue,associated_query):
-	for q in query_list:
-		q['start_time'] = time.time()
-		f = pipeline_handle.remote(**q['data'])
-		future_queue.put_nowait(f)
-		associated_query[f] = q
-	
-
-
-
-
 
 
 def query():
@@ -117,8 +71,8 @@ serve.create_backend(Transform, "transform:v1",0,transform)
 serve.create_backend(Resnet50,"r50",1,model)
 
 # create service
-serve.create_no_http_service("transform",max_batch_size=2)
-serve.create_no_http_service("imagenet-classification",max_batch_size=4)
+serve.create_no_http_service("transform",max_batch_size=3)
+serve.create_no_http_service("imagenet-classification",max_batch_size=8)
 
 #link service and backend
 serve.link_service("transform", "transform:v1")
@@ -133,12 +87,11 @@ serve.provision_pipeline("pipeline1")
 dependency = serve.get_service_dependencies("pipeline1")
 pipeline_handle = serve.get_handle("pipeline1")
 
-
 future_list = []
-query_list = []
+query_stats = {}
 query_list = []
 
-for r in range(40):
+for r in range(12):
 	q = query()
 	q['slo'] = 70
 	q['index'] = r
@@ -146,25 +99,34 @@ for r in range(40):
 	req_json['slo'] = q['slo']
 	q['data'] = req_json
 	query_list.append(q)
+for q in query_list:
+		q['start_time'] = time.time()
+		f = pipeline_handle.remote(**q['data'])
+		future_list.append(f)
+		query_stats[f] = q
+# for r in range(12):
+# 	req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()) }
+# 	q = {'start_time' : time.time()}
+# 	f = pipeline_handle.remote(**req_json)
+# 	q['index'] = r
+# 	query_stats[]
+# 	future_list.append(f)
 
-future_queue = queue.Queue()
-reqRecord = RequestRecorder(queue=future_queue)
-associated_query = {}
-loop = asyncio.get_event_loop()
-task1 = asyncio.ensure_future(reqRecord.examine_futures())
-task2 = asyncio.ensure_future(send_queries(query_list,pipeline_handle,future_queue,associated_query))
+left_futures = future_list
+while left_futures:
+	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
+	if len(completed_futures) > 0:
+		end_time = time.time()
+		query_stats[f]['end_time'] = end_time
+		f = completed_futures[0]
+		# result = ray.get(f)
+		# print("--------------------------------")
+		# print(result)
+	left_futures = remaining_futures
 
-loop.run_until_complete(asyncio.wait([task1,task2]))
-loop.close()
 
-for f in associated_query.keys():
-	val = associated_query[f]
-	end_time = reqRecord.timing_stats[f]
-	val['end_time'] = end_time
-for f in associated_query.keys():
-	print("-----------------")
-	val = associated_query[f]
-	# pprint(val)
-	print("Query Index: {}  time taken (in seconds): {}".format(val['index'],(val['end_time']-val['start_time'])))
-
+for f in query_stats.keys():
+	val = query_stats[f]
+	time_taken = val['end_time'] - val['start_time']
+	print("Query: {} Time Taken: {}".format(val['index'],time_taken))
 
