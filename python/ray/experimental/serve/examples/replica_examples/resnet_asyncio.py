@@ -87,7 +87,7 @@ loop = asyncio.get_event_loop()
 start_time_d = {}
 end_time_d = {}
 # futures = set()
-num_q = 1
+num_q = 40
 async def fire_queries(start_time_d,end_time_d,num_q):
 	await async_api._async_init()
 	futures = set()
