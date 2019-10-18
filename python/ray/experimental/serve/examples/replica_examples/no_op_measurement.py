@@ -35,6 +35,7 @@ def examine_futures(future_queue,timing_stats,num_q):
 
 def send_queries(future_queue,associated_query,num_q):
 	for i in range(num_q):
+		print("here")
 		start_time = time.time()
 		f = simple_func.remote()
 		future_queue.put_nowait(f)
