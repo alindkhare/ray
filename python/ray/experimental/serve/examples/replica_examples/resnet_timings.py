@@ -91,7 +91,7 @@ future_list = []
 query_stats = {}
 query_list = []
 
-for r in range(12):
+for r in range(40):
 	q = query()
 	q['slo'] = 70
 	q['index'] = r
@@ -103,7 +103,7 @@ for q in query_list:
 		q['start_time'] = time.time()
 		f = pipeline_handle.remote(**q['data'])
 		future_list.append(f)
-		query_stats[f] = q
+		# query_stats[f] = q
 # for r in range(12):
 # 	req_json = { "transform": base64.b64encode(open('elephant.jpg', "rb").read()) }
 # 	q = {'start_time' : time.time()}
@@ -112,22 +112,26 @@ for q in query_list:
 # 	query_stats[]
 # 	future_list.append(f)
 
-left_futures = future_list
-while left_futures:
-	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
-	if len(completed_futures) > 0:
-		end_time = time.time()
-		f = completed_futures[0]
-		query_stats[f]['end_time'] = end_time
+start = time.time()
+results = ray.get(future_list)
+end = time.time()
+print("Time taken: {}".format((end - start)))
+# left_futures = future_list
+# while left_futures:
+# 	completed_futures , remaining_futures = ray.wait(left_futures,timeout=0.05)
+# 	if len(completed_futures) > 0:
+# 		end_time = time.time()
+# 		f = completed_futures[0]
+# 		query_stats[f]['end_time'] = end_time
 		
-		# result = ray.get(f)
-		# print("--------------------------------")
-		# print(result)
-	left_futures = remaining_futures
+# 		# result = ray.get(f)
+# 		# print("--------------------------------")
+# 		# print(result)
+# 	left_futures = remaining_futures
 
 
-for f in query_stats.keys():
-	val = query_stats[f]
-	time_taken = val['end_time'] - val['start_time']
-	print("Query: {} Time Taken: {}".format(val['index'],time_taken))
+# for f in query_stats.keys():
+# 	val = query_stats[f]
+# 	time_taken = val['end_time'] - val['start_time']
+# 	print("Query: {} Time Taken: {}".format(val['index'],time_taken))
 
