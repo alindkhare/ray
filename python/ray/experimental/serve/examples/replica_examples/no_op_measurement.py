@@ -34,11 +34,13 @@ def examine_futures(future_queue,timing_stats,num_q):
 	return
 
 def send_queries(future_queue,associated_query,num_q):
-	for _ in range(num_q):
+	for i in range(num_q):
 		start_time = time.time()
 		f = simple_func.remote()
 		future_queue.put_nowait(f)
 		associated_query[f] = start_time
+	print("Submitted: {}".format(i))
+	# print("")
 
 from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 associated_query = {}
