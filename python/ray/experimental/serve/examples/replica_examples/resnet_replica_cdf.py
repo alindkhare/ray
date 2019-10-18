@@ -164,6 +164,7 @@ for f in associated_query.keys():
 for f in associated_query.keys():
 	print("-----------------")
 	val = associated_query[f]
+	pprint(val)
 	print("Query Index: {}  time taken (in seconds): {}".format(val['index'],(val['end_time']-val['start_time'])))
 
 
