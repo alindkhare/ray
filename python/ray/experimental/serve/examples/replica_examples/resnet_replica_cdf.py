@@ -23,7 +23,7 @@ class RequestRecorder:
 		self.timing_stats = {}
 		self.pending_futures = []
 	async def examine_futures(self):
-		await asyncio.sleep(0.0009)
+		await asyncio.sleep(0.00009)
 		print("Started")
 		while True:
 
@@ -32,7 +32,7 @@ class RequestRecorder:
 			if self.queue.qsize() > 0:
 				# while not self.queue.empty():
 				try:
-					item  = self.queue.get(block=True,timeout=0.009)
+					item  = self.queue.get(block=True,timeout=0.0009)
 					new_pending_futures.append(item)
 				except Exception:
 					break
