@@ -48,7 +48,7 @@ num_q = 1000
 future_queue = queue.Queue()
 pool = ThreadPoolExecutor(2)
 f1 = pool.submit(send_queries,future_queue,associated_query,num_q)
-f1 = pool.submit(examine_futures,future_queue,timing_stats,num_q)
+f2 = pool.submit(examine_futures,future_queue,timing_stats,num_q)
 wait([f1,f2])
 
 for f in associated_query.keys():
