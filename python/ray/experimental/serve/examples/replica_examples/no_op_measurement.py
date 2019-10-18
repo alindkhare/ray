@@ -3,7 +3,7 @@ import queue
 import time
 
 @ray.remote
-def simple_fun():
+def simple_func():
     return 1
 
 
@@ -15,7 +15,7 @@ def examine_futures(future_queue,timing_stats,num_q):
 	while True:
 		new_pending_futures = []	
 		try:
-		    item  = future_queue.get(block=True,timeout=0.00009)
+		    item  = future_queue.get(block=True,timeout=0.0009)
 		    new_pending_futures.append(item)
 		    c += 1
 		except Exception:
@@ -25,7 +25,7 @@ def examine_futures(future_queue,timing_stats,num_q):
 		pending_futures = pending_futures + new_pending_futures
 		if len(pending_futures) == 0:
 			continue
-		completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.00001)
+		completed_futures , remaining_futures = ray.wait(pending_futures,timeout=0.0001)
 		if len(completed_futures) == 1:
 			f = completed_futures[0]
 			timing_stats[f] = time.time()
@@ -36,14 +36,14 @@ def examine_futures(future_queue,timing_stats,num_q):
 def send_queries(future_queue,associated_query,num_q):
 	for _ in range(num_q):
 		start_time = time.time()
-		f = simple_fun.remote()
+		f = simple_func.remote()
 		future_queue.put_nowait(f)
 		associated_query[f] = start_time
 
 from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 associated_query = {}
 timing_stats = {}
-num_q = 1000
+num_q = 10
 
 future_queue = queue.Queue()
 pool = ThreadPoolExecutor(2)
