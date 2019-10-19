@@ -138,10 +138,10 @@ class HTTPProxy:
                             list_data = [data_d[p] for p in predecessors_list]
                             data_sent[node] = list_data
 
-                    future_list = [self.router.enqueue_request.remote(node, data_sent[node]) for node in node_list]
-                    completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
+                    future_list = [ as_future(self.router.enqueue_request.remote(node, data_sent[node])) for node in node_list]
+                    completed_futures, non_c  = await asyncio.wait(future_list, return_when=asyncio.ALL_COMPLETED)
                     assert(len(non_c) == 0)
-                    future_enqueues_binary = ray.get(completed_futures)
+                    future_enqueues_binary = [f.result() for f in completed_futures]
 
                     future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
                     # completed_future_enqueues, non_c = ray.wait(future_enqueues,num_returns=len(future_enqueues))
@@ -150,7 +150,7 @@ class HTTPProxy:
                     for k,v in zip(node_list,future_enqueues):
                         data_d[k] = v
                         
-                result = ray.get(data_d[last_node])
+                result = await as_future(data_d[last_node])
 
                 result_received_time = time.time()
 
@@ -196,10 +196,10 @@ class HTTPProxy:
                             list_data = [data_d[p] for p in predecessors_list]
                             data_sent[node] = list_data
 
-                    future_list = [self.router.enqueue_request.remote(node, data_sent[node]) for node in node_list]
-                    completed_futures, non_c  = ray.wait(future_list,num_returns=len(future_list))
+                    future_list = [ as_future(self.router.enqueue_request.remote(node, data_sent[node])) for node in node_list]
+                    completed_futures, non_c  = await asyncio.wait(future_list, return_when=asyncio.ALL_COMPLETED)
                     assert(len(non_c) == 0)
-                    future_enqueues_binary = ray.get(completed_futures)
+                    future_enqueues_binary = [f.result() for f in completed_futures]
 
                     future_enqueues = [ray.ObjectID(x) for x in future_enqueues_binary]
                     # completed_future_enqueues, non_c = ray.wait(future_enqueues,num_returns=len(future_enqueues))
@@ -208,7 +208,7 @@ class HTTPProxy:
                     for k,v in zip(node_list,future_enqueues):
                         data_d[k] = v
 
-                result = ray.get(data_d[last_node])
+                result = await as_future(data_d[last_node])
 
                 result_received_time = time.time()
 
