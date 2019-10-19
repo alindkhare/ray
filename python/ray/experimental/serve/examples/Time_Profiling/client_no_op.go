@@ -15,10 +15,11 @@ func MakeRequest(url string, ch chan<-string) {
 func main() {
   start := time.Now()
   ch := make(chan string)
-  for i := 0; i <= 100; i++ {
+  for i := 0; i <= 1000; i++ {
+  	  time.Sleep(10 * time.Millisecond)
       go MakeRequest("http://127.0.0.1:8000/echo", ch)
   }
-  for i := 0; i <= 100; i++ {
+  for i := 0; i <= 1000; i++ {
     fmt.Println(<-ch)
   }
   fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
