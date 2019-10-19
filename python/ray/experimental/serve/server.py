@@ -1,6 +1,9 @@
 import asyncio
 import json
 
+import time
+import os
+
 import uvicorn
 from collections import defaultdict, deque
 import ray
@@ -71,6 +74,7 @@ class HTTPProxy:
         self.router = router_handle
         self.route_table = dict()
         self.pipeline_table = dict()
+        self.profile_file = open(os.environ.get("SERVE_PROFILE_PATH", "/tmp/serve_profile.jsonl"),'w')
 
     async def route_checker(self, interval):
         while True:
@@ -120,6 +124,10 @@ class HTTPProxy:
                 last_node = service_dependencies['node_order'][size-1]
                 assert len(last_node) == 1
                 last_node = last_node[0]
+
+                request_sent_time = time.time()
+
+
                 for node_list in service_dependencies['node_order']:
                     data_sent = {}
                     for node in node_list:
@@ -141,7 +149,14 @@ class HTTPProxy:
                     # node_data_list = ray.get(completed_future_enqueues)
                     for k,v in zip(node_list,future_enqueues):
                         data_d[k] = v
+                        
                 result = ray.get(data_d[last_node])
+
+                result_received_time = time.time()
+
+                self.profile_file.write(json.dumps({"start": request_sent_time, "end": result_received_time}))
+                self.profile_file.write("\n")
+                self.profile_file.flush()
 
                 if isinstance(result, ray.exceptions.RayTaskError):
                     await JSONResponse({
@@ -164,6 +179,9 @@ class HTTPProxy:
                 last_node = service_dependencies['node_order'][size-1]
                 assert len(last_node) == 1
                 last_node = last_node[0]
+
+                request_sent_time = time.time()
+
                 for node_list in service_dependencies['node_order']:
                     data_sent = {}
                     for node in node_list:
@@ -191,6 +209,12 @@ class HTTPProxy:
                         data_d[k] = v
 
                 result = ray.get(data_d[last_node])
+
+                result_received_time = time.time()
+
+                self.profile_file.write(json.dumps({"start": request_sent_time, "end": result_received_time}))
+                self.profile_file.write("\n")
+                self.profile_file.flush()
 
                 if isinstance(result, ray.exceptions.RayTaskError):
                     await JSONResponse({
