@@ -1,7 +1,7 @@
 package main
 import(
 	"github.com/nahid/gohttp"
-	"fmt"
+	// "fmt"
 )
 
 
@@ -12,9 +12,9 @@ func main() {
 	for i := 0; i <= 100; i++ {
 		req.AsyncGet("http://127.0.0.1:8000/echo", ch)
 	}
-	for i:=0; i<=100; i++ {
-		op := <-ch
+	// for i:=0; i<=100; i++ {
+	// 	op := <-ch
 
-		fmt.Println(op.GetBodyAsString())
-	}
+	// 	fmt.Println(op.GetBodyAsString())
+	// }
 }
