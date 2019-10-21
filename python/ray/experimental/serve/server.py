@@ -138,7 +138,7 @@ class HTTPProxy:
                             list_data = [data_d[p] for p in predecessors_list]
                             data_sent[node] = list_data
 
-                    future_list = [ as_future(self.router.enqueue_request.remote(node, data_sent[node])) for node in node_list]
+                    future_list = [ as_future(self.router.enqueue_request.remote(node, data_sent[node],slo=time.time())) for node in node_list]
                     completed_futures, non_c  = await asyncio.wait(future_list, return_when=asyncio.ALL_COMPLETED)
                     assert(len(non_c) == 0)
                     future_enqueues_binary = [f.result() for f in completed_futures]
@@ -196,7 +196,7 @@ class HTTPProxy:
                             list_data = [data_d[p] for p in predecessors_list]
                             data_sent[node] = list_data
 
-                    future_list = [ as_future(self.router.enqueue_request.remote(node, data_sent[node])) for node in node_list]
+                    future_list = [ as_future(self.router.enqueue_request.remote(node, data_sent[node],slo=time.time())) for node in node_list]
                     completed_futures, non_c  = await asyncio.wait(future_list, return_when=asyncio.ALL_COMPLETED)
                     assert(len(non_c) == 0)
                     future_enqueues_binary = [f.result() for f in completed_futures]
