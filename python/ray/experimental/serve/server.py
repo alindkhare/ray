@@ -11,7 +11,6 @@ from ray.experimental.async_api import _async_init, as_future
 from ray.experimental.serve.utils import BytesEncoder
 from ray.experimental.serve.constants import HTTP_ROUTER_CHECKER_INTERVAL_S
 from networkx.readwrite import json_graph
-
 class JSONResponse:
     """ASGI compliant response class.
 
@@ -186,10 +185,10 @@ class HTTPProxy:
                     data_sent = {}
                     for node in node_list:
                         if len(service_dependencies['predecessors'][node]) == 0:
-                            if node in body:
-                                data_sent[node] = (body[node],)
+                            if 'data' in body:
+                                data_sent[node] = (body['data'],)
                             else:
-                                result = ray.exceptions.RayTaskError('Specify service name in input', '')
+                                result = ray.exceptions.RayTaskError('Specify data in input', '')
                                 break
                         else:
                             predecessors_list = service_dependencies['predecessors'][node]
