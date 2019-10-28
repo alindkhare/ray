@@ -23,6 +23,7 @@ def wrap_to_ray_error(callable_obj, *args):
         return callable_obj(*args)
     except Exception:
         traceback_str = ray.utils.format_error_message(traceback.format_exc())
+        print(traceback_str)
         return ray.exceptions.RayTaskError(str(callable_obj), traceback_str)
 
 
