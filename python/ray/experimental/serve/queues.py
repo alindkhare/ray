@@ -63,7 +63,7 @@ class CentralizedQueues:
 
     def __init__(self):
         # service_name -> request queue
-        self.queues = defaultdict(sortedlist)
+        self.queues = defaultdict(deque)
 
         # service_name -> max. batch size
         self.service_max_batch_size = {}
@@ -76,7 +76,7 @@ class CentralizedQueues:
 
     def enqueue_request(self, service,request_data,slo=float(1e10)):
         query = Query(request_data,slo)
-        self.queues[service].add(query)
+        self.queues[service].append(query)
         self.flush()
         return query.result_object_id.binary()
 
@@ -150,7 +150,7 @@ class CentralizedQueues:
                         break
                     work = self.workers[backend].popleft()
                     pop_len = min(batch_size,len(queue))
-                    request = [ queue.pop() for i in range(pop_len)]
+                    request = [ queue.popleft() for i in range(pop_len)]
                     ray.worker.global_worker.put_object(
                         work.work_object_id, request)
 
