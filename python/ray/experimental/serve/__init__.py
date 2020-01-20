@@ -1,5 +1,6 @@
 from ray.experimental.serve.backend_config import BackendConfig
 from ray.experimental.serve.policy import RoutePolicy
+from ray.experimental.serve.constants import RESULT_KEY, PREDICATE_KEY
 from ray.experimental.serve.api import (
     init, create_backend, create_endpoint, link, split, get_handle, stat,
     set_backend_config, get_backend_config, accept_batch, shutdown)  # noqa: E402
