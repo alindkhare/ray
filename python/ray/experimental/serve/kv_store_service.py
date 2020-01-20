@@ -172,6 +172,8 @@ class SQLiteKVStore(NamespacedKVStore):
 class RoutingTable:
     def __init__(self, kv_connector):
         self.routing_table = kv_connector("routing_table")
+        self.no_route_service_table = kv_connector("no_route")
+        self.profile_info = kv_connector("profile_info")
         self.request_count = 0
 
     def register_service(self, route: str, service: str):
@@ -185,6 +187,38 @@ class RoutingTable:
         logger.debug("[KV] Registering route {} to service {}.".format(
             route, service))
         self.routing_table.put(route, service)
+
+    def register_no_route_service(self, service: str):
+        """Create an entry in no route service table
+
+        Args:
+            service: service name. This service can only be accessed via
+                remote calls.
+        """
+        logger.debug("[KV] Registering no route service: {}".format(service))
+        self.no_route_service_table.put(service, "")
+
+    def get_no_route_services(self):
+        return list(self.no_route_service_table.as_dict().keys())
+
+    def register_kwargs_creator(self, service: str, kwargs_creator):
+        """Create an entry in profile info table for profiling this service.
+
+        Args:
+            service: service name. This is the name http actor will push
+                the request to.
+            kwargs_creator: a lambda function which creates kwargs for
+                profiling information.
+
+        """
+        logger.debug("[KV] Registering lambda function for "
+                     "profiling service {}".format(service))
+        self.profile_info.put(service, pickle.dumps(kwargs_creator))
+
+    def get_profile_info(self):
+        """Returns the profile info."""
+        table = self.profile_info.as_dict()
+        return table
 
     def list_service(self):
         """Returns the routing table."""
@@ -238,6 +272,11 @@ class BackendTable:
     def list_backends(self):
         return list(self.backend_table.as_dict().keys())
 
+    def get_backend_predicate(self, backend_tag):
+        backend_info = json.loads(self.backend_info.get(backend_tag, "{}"))
+        if "enable_predicate" in backend_info:
+            return backend_info["enable_predicate"]
+
     def list_replicas(self, backend_tag: str):
         return json.loads(self.replica_table.get(backend_tag, "[]"))
 
@@ -263,5 +302,5 @@ class TrafficPolicyTable:
     def list_traffic_policy(self):
         return {
             service: json.loads(policy)
-            for service, policy in self.traffic_policy_table.as_dict()
+            for service, policy in self.traffic_policy_table.as_dict().items()
         }

@@ -5,10 +5,17 @@ import uvicorn
 
 import ray
 from ray.experimental.async_api import _async_init
-from ray.experimental.serve.constants import HTTP_ROUTER_CHECKER_INTERVAL_S
+from ray.experimental.serve.constants import (HTTP_ROUTER_CHECKER_INTERVAL_S,
+                                              PREDICATE_DEFAULT_VALUE,
+                                              SERVE_PROFILE_PATH)
 from ray.experimental.serve.context import TaskContext
 from ray.experimental.serve.utils import BytesEncoder
 from urllib.parse import parse_qs
+from ray.experimental.serve.request_params import RequestParams
+import os
+from ray import cloudpickle as pickle
+import time
+import sys
 
 
 class JSONResponse:
@@ -63,8 +70,12 @@ class HTTPProxy:
         from ray.experimental.serve.global_state import GlobalState
         self.serve_global_state = GlobalState()
         self.route_table_cache = dict()
+        self.policy_table_cache = dict()
 
         self.route_checker_should_shutdown = False
+        self.profile_file = open(
+            os.environ.get("SERVE_PROFILE_PATH", "/tmp/serve_profile.jsonl"),
+            "w")
 
     async def route_checker(self, interval):
         while True:
@@ -73,6 +84,9 @@ class HTTPProxy:
 
             self.route_table_cache = (
                 self.serve_global_state.route_table.list_service())
+
+            self.policy_table_cache = (
+                self.serve_global_state.route_table.get_profile_info())
 
             await asyncio.sleep(interval)
 
@@ -101,6 +115,60 @@ class HTTPProxy:
 
         return b"".join(body_buffer)
 
+    async def handle_profiling_requests(self, current_path, scope, receive,
+                                        send):
+        profile_string, service_name = os.path.split(current_path)
+        if (profile_string != SERVE_PROFILE_PATH
+                or service_name not in self.policy_table_cache):
+            error_message = ("Path {} not found. Please enter"
+                             " the correct path for profiling the"
+                             " service".format(current_path))
+            await JSONResponse(
+                {
+                    "error": error_message
+                }, status_code=404)(scope, receive, send)
+            return
+
+        # load the kwargs creator
+        kwargs_creator = pickle.loads(self.policy_table_cache[service_name])
+        kwargs = kwargs_creator()
+        args = ()
+
+        request_sent_time = time.time()
+
+        # NOTE: Since the profile setting takes kwargs it is necessary to
+        # specify the context as Python.
+        # All the services aimed at profiling should have backends which
+        # support Python context.
+        request_params = RequestParams(
+            service_name, TaskContext.Python)
+
+        # await for request info to get back
+        req_info = await (self.serve_global_state.init_or_get_router()
+                          .enqueue_request.remote(request_params, True,
+                                                  PREDICATE_DEFAULT_VALUE, *args, **kwargs))
+
+        result = await next(iter(req_info))
+
+        result_received_time = time.time()
+
+        self.profile_file.write(
+            json.dumps({
+                "start": request_sent_time,
+                "end": result_received_time
+            }))
+        self.profile_file.write("\n")
+        self.profile_file.flush()
+
+        if isinstance(result, ray.exceptions.RayTaskError):
+            await JSONResponse({
+                "error": "internal error, please use python API to debug"
+            })(scope, receive, send)
+        else:
+            await JSONResponse({
+                "result": "Profiled OK!"
+            })(scope, receive, send)
+
     async def __call__(self, scope, receive, send):
         # NOTE: This implements ASGI protocol specified in
         #       https://asgi.readthedocs.io/en/latest/specs/index.html
@@ -126,6 +194,12 @@ class HTTPProxy:
                 }, status_code=404)(scope, receive, send)
             return
 
+        # See if the incoming request path is targetted for profiling.
+        if SERVE_PROFILE_PATH in current_path:
+            await self.handle_profiling_requests(current_path, scope, receive,
+                                                 send)
+            return
+
         endpoint_name = self.route_table_cache[current_path]
         http_body_bytes = await self.receive_http_body(scope, receive, send)
 
@@ -148,16 +222,34 @@ class HTTPProxy:
                 await JSONResponse({"error": str(e)})(scope, receive, send)
                 return
 
-        result_object_id_bytes = await (
-            self.serve_global_state.init_or_get_router()
-            .enqueue_request.remote(
-                service=endpoint_name,
-                request_args=(scope, http_body_bytes),
-                request_kwargs=dict(),
-                request_context=TaskContext.Web,
-                request_slo_ms=request_slo_ms))
+        # NOTE: For HTTP requests completely asynchronous call to enqueue
+        #       request is not supported!
+        request_params = RequestParams(
+            endpoint_name, TaskContext.Web, request_slo_ms=request_slo_ms)
 
-        result = await ray.ObjectID(result_object_id_bytes)
+        # TODO(alind): File a Ray issue if args contain b"" it is not
+        #              received.
+        # Hence enclosing http_body_bytes inside a list.
+        args = (scope, [http_body_bytes])
+        kwargs = dict()
+
+        request_sent_time = time.time()
+        # await for request info to get back
+        req_info = await (self.serve_global_state.init_or_get_router()
+                          .enqueue_request.remote(request_params, True,
+                                                  PREDICATE_DEFAULT_VALUE,
+                                                  *args, **kwargs))
+
+        # await for result
+        result = await next(iter(req_info))
+        result_received_time = time.time()
+        self.profile_file.write(
+            json.dumps({
+                "start": request_sent_time,
+                "end": result_received_time
+            }))
+        self.profile_file.write("\n")
+        self.profile_file.flush()
 
         if isinstance(result, ray.exceptions.RayTaskError):
             await JSONResponse({
@@ -174,4 +266,4 @@ class HTTPActor:
 
     def run(self, host="0.0.0.0", port=8000):
         uvicorn.run(
-            self.app, host=host, port=port, lifespan="on", access_log=False)
+            self.app, host=host, port=port, lifespan="on", access_log=True, limit_concurrency=sys.maxsize, limit_max_requests=sys.maxsize)

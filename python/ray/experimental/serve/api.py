@@ -1,12 +1,13 @@
 import inspect
 from functools import wraps
 from tempfile import mkstemp
-
 import numpy as np
+import os
 
 import ray
 from ray.experimental.serve.constants import (
-    DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT, SERVE_NURSERY_NAME)
+    DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT, SERVE_NURSERY_NAME,
+    SERVE_PROFILE_PATH)
 from ray.experimental.serve.global_state import (GlobalState,
                                                  start_initial_state)
 from ray.experimental.serve.kv_store_service import SQLiteKVStore
@@ -134,7 +135,10 @@ def init(kv_store_connector=None,
 
 
 @_ensure_connected
-def create_endpoint(endpoint_name, route, blocking=True):
+def create_endpoint(endpoint_name,
+                    route=None,
+                    kwargs_creator=None,
+                    blocking=True):
     """Create a service endpoint given route_expression.
 
     Args:
@@ -142,10 +146,21 @@ def create_endpoint(endpoint_name, route, blocking=True):
             used as key to set traffic policy.
         route (str): A string begin with "/". HTTP server will use
             the string to match the path.
+        kwargs_creator(lambda fn): A lambda function which returns a kwargs
+            list for profiling the service.
         blocking (bool): If true, the function will wait for service to be
             registered before returning
     """
-    global_state.route_table.register_service(route, endpoint_name)
+    if route is None:
+        global_state.route_table.register_no_route_service(endpoint_name)
+    else:
+        global_state.route_table.register_service(route, endpoint_name)
+
+    if kwargs_creator is not None:
+        global_state.route_table.register_service(
+            os.path.join(SERVE_PROFILE_PATH, endpoint_name), endpoint_name)
+        global_state.route_table.register_kwargs_creator(
+            endpoint_name, kwargs_creator)
 
 
 @_ensure_connected
@@ -204,7 +219,8 @@ def get_backend_config(backend_tag):
 def create_backend(func_or_class,
                    backend_tag,
                    *actor_init_args,
-                   backend_config=BackendConfig()):
+                   backend_config=BackendConfig(),
+                   predicate_function=None):
     """Create a backend using func_or_class and assign backend_tag.
 
     Args:
@@ -216,6 +232,8 @@ def create_backend(func_or_class,
         for starting a backend.
         *actor_init_args (optional): the argument to pass to the class
             initialization method.
+        predicate_function(callable): a function which returns boolean values
+            for conditional enqueuing.
     """
     assert isinstance(backend_config,
                       BackendConfig), ("backend_config must be"
@@ -234,16 +252,26 @@ def create_backend(func_or_class,
         if should_accept_batch and not hasattr(func_or_class,
                                                "serve_accept_batch"):
             raise batch_annotation_not_found
-
+        if backend_config.enable_predicate and predicate_function is None:
+            raise RayServeException(
+                "For enabling predicate, Specify predicate_function.")
         # arg list for a fn is function itself
         arg_list = [func_or_class]
+        # add predicate function to args
+        if backend_config.enable_predicate:
+            arg_list.append(predicate_function)
+
         # ignore lint on lambda expression
         creator = lambda kwrgs: TaskRunnerActor._remote(**kwrgs)  # noqa: E731
     elif inspect.isclass(func_or_class):
         if should_accept_batch and not hasattr(func_or_class.__call__,
                                                "serve_accept_batch"):
             raise batch_annotation_not_found
-
+        if backend_config.enable_predicate and not hasattr(
+                func_or_class, "__predicate__"):
+            raise RayServeException(
+                "For enabling predicate, implement __predicate__ function "
+                "in backend class.")
         # Python inheritance order is right-to-left. We put RayServeMixin
         # on the left to make sure its methods are not overriden.
         @ray.remote
@@ -251,6 +279,7 @@ def create_backend(func_or_class,
             pass
 
         arg_list = actor_init_args
+
         # ignore lint on lambda expression
         creator = lambda kwargs: CustomActor._remote(**kwargs)  # noqa: E731
     else:
@@ -297,7 +326,10 @@ def _start_replica(backend_tag):
     # Setup the worker
     ray.get(
         runner_handle._ray_serve_setup.remote(
-            backend_tag, global_state.init_or_get_router(), runner_handle))
+            backend_tag,
+            global_state.init_or_get_router(),
+            runner_handle,
+            predicate_required=backend_config.enable_predicate))
     runner_handle._ray_serve_fetch.remote()
 
     # Register the worker in config tables as well as metric monitor
@@ -387,15 +419,23 @@ def split(endpoint_name, traffic_policy_dictionary):
         traffic_policy_dictionary (dict): a dictionary maps backend names
             to their traffic weights. The weights must sum to 1.
     """
-    assert endpoint_name in global_state.route_table.list_service().values()
+    assert (endpoint_name in global_state.route_table.list_service().values()
+            or
+            endpoint_name in global_state.route_table.get_no_route_services())
 
     assert isinstance(traffic_policy_dictionary,
                       dict), "Traffic policy must be dictionary"
     prob = 0
+    backend_predicates = []
     for backend, weight in traffic_policy_dictionary.items():
         prob += weight
         assert (backend in global_state.backend_table.list_backends()
                 ), "backend {} is not registered".format(backend)
+        backend_predicates.append(
+            global_state.backend_table.get_backend_predicate(backend))
+    assert len(set(backend_predicates)) == 1, ("Provided backends are not"
+                                               "consistent wrt to predicate"
+                                               "feature")
     assert np.isclose(
         prob, 1,
         atol=0.02), "weights must sum to 1, currently it sums to {}".format(
@@ -417,7 +457,9 @@ def get_handle(endpoint_name):
     Returns:
         RayServeHandle
     """
-    assert endpoint_name in global_state.route_table.list_service().values()
+    assert (endpoint_name in global_state.route_table.list_service().values()
+            or
+            endpoint_name in global_state.route_table.get_no_route_services())
 
     # Delay import due to it's dependency on global_state
     from ray.experimental.serve.handle import RayServeHandle
@@ -439,3 +481,9 @@ def stat(percentiles=[50, 90, 95],
     """
     return ray.get(global_state.init_or_get_metric_monitor().collect.remote(
         percentiles, agg_windows_seconds))
+    
+@_ensure_connected    
+def shutdown():
+    global global_state
+    global_state = None
+    ray.shutdown()

@@ -7,6 +7,11 @@ from ray.experimental.serve.utils import logger
 import itertools
 from blist import sortedlist
 import time
+from ray.experimental.serve.request_params import RequestInfo
+from ray.experimental.serve.constants import (RESULT_KEY, PREDICATE_KEY,
+                                              PREDICATE_DEFAULT_VALUE)
+
+from copy import deepcopy
 
 
 class Query:
@@ -15,15 +20,14 @@ class Query:
                  request_kwargs,
                  request_context,
                  request_slo_ms,
-                 result_object_id=None):
+                 result_object_id={}):
         self.request_args = request_args
         self.request_kwargs = request_kwargs
         self.request_context = request_context
 
-        if result_object_id is None:
-            self.result_object_id = ray.ObjectID.from_random()
-        else:
-            self.result_object_id = result_object_id
+        if RESULT_KEY not in result_object_id:
+            result_object_id[RESULT_KEY] = ray.ObjectID.from_random()
+        self.result_object_id = result_object_id
 
         # Service level objective in milliseconds. This is expected to be the
         # absolute time since unix epoch.
@@ -114,23 +118,85 @@ class CentralizedQueues:
     # request_slo_ms is time specified in milliseconds till which the
     # answer of the query should be calculated
     def enqueue_request(self,
-                        service,
-                        request_args,
-                        request_kwargs,
-                        request_context,
-                        request_slo_ms=None):
-        if request_slo_ms is None:
-            # if request_slo_ms is not specified then set it to a high level
-            request_slo_ms = 1e9
+                        request_params,
+                        predicate_condition=True,
+                        default_value=PREDICATE_DEFAULT_VALUE,
+                        *request_args,
+                        **request_kwargs):
+        """
+        Enqueues a request in the service queue.
 
-        # add wall clock time to specify the deadline for completion of query
-        # this also assures FIFO behaviour if request_slo_ms is not specified
-        request_slo_ms += (time.time() * 1000)
-        query = Query(request_args, request_kwargs, request_context,
-                      request_slo_ms)
-        self.queues[service].append(query)
-        self.flush()
-        return query.result_object_id.binary()
+        Args:
+            request_params(RequestParams): Argument specified for enqueuing
+                request and getting information correspondingly after the
+                enqueue is called.
+            predicate_condition(bool): Specifies whether to enqueue the
+                request or not. Intendted when this function is called passing
+                a ray.ObjectID for this variable.
+            default_value: Only used when predicate_condition is `False`. The
+                RequestInfo returned will have this value.
+            *request_args(optional): The arguments that need to be passed to
+                backend class `__call__` method.
+            **request_kwargs(optional): The keyword arguments that need to be
+                passed to backend class `__call__` method.
+        :rtype:
+            RequestInfo
+        """
+        if predicate_condition:
+            request_slo_ms = request_params.request_slo_ms
+            return_object_id = (
+                RESULT_KEY not in request_params.return_object_ids)
+            if request_slo_ms is None:
+                # if request_slo_ms is not specified then set
+                # it to a high level
+                request_slo_ms = 1e9
+
+            # add wall clock time to specify the deadline for completion of
+            # query this also assures FIFO behaviour if request_slo_ms is not
+            # specified if request_slo_ms is not wall clock time.
+            if not request_params.is_wall_clock_time:
+                request_slo_ms += (time.time() * 1000)
+            query = Query(
+                request_args,
+                request_kwargs,
+                request_params.request_context,
+                request_slo_ms,
+                result_object_id=deepcopy(request_params.return_object_ids))
+
+            self.queues[request_params.service].append(query)
+            self.flush()
+            # create request information to be returned
+            req_info = RequestInfo(query.result_object_id, return_object_id,
+                                   request_slo_ms,
+                                   request_params.return_wall_clock_time)
+            return req_info
+        else:
+            # set the default value
+            if default_value != PREDICATE_DEFAULT_VALUE:
+                args_kwargs_identifier, param = default_value
+                if args_kwargs_identifier == "args":
+                    default_value = request_args[param]
+                else:
+                    default_value = request_kwargs[param]
+            object_id_dict = request_params.return_object_ids
+            request_slo_ms = request_params.request_slo_ms
+            if request_slo_ms is None:
+                request_slo_ms = 0
+            if not request_params.is_wall_clock_time:
+                request_slo_ms += (time.time() * 1000)
+            return_object_id = False
+            if RESULT_KEY not in object_id_dict:
+                return_object_id = True
+                object_id_dict[RESULT_KEY] = ray.ObjectID.from_random()
+            ray.worker.global_worker.put_object(default_value,
+                                                object_id_dict[RESULT_KEY])
+            if PREDICATE_KEY in object_id_dict:
+                ray.worker.global_worker.put_object(
+                    predicate_condition, object_id_dict[PREDICATE_KEY])
+            req_info = RequestInfo(object_id_dict, return_object_id,
+                                   request_slo_ms,
+                                   request_params.return_wall_clock_time)
+            return req_info
 
     def dequeue_request(self, backend, replica_handle):
         intention = WorkIntent(replica_handle)
@@ -160,6 +226,10 @@ class CentralizedQueues:
         self.traffic[service] = traffic_dict
         self.flush()
 
+    def get_traffic(self, service):
+        if service in self.traffic:
+            return self.traffic[service]
+
     def set_backend_config(self, backend, config_dict):
         logger.debug("Setting backend config for "
                      "backend {} to {}".format(backend, config_dict))
@@ -183,6 +253,11 @@ class CentralizedQueues:
 
     # flushes the buffer queue and assigns work to workers
     def _flush_buffer(self):
+        """
+        Expected Behavior:
+            The buffer queue of every registered and linked backend should
+            be empty by the end of this function call.
+        """
         for service in self.queues.keys():
             ready_backends = self._get_available_backends(service)
             for backend in ready_backends:
@@ -229,6 +304,9 @@ class CentralizedQueues:
 
     # _flush function has to flush the service and buffer queues.
     def _flush(self):
+        """
+        Flush service and the buffer queues.
+        """
         self._flush_service_queue()
         self._flush_buffer()
 
@@ -252,7 +330,7 @@ class CentralizedQueuesActor(CentralizedQueues):
 
 class RandomPolicyQueue(CentralizedQueues):
     """
-    A wrapper class for Random policy.This backend selection policy is
+    A wrapper class for Random policy. This backend selection policy is
     `Stateless` meaning the current decisions of selecting backend are
     not dependent on previous decisions. Random policy (randomly) samples
     backends based on backend weights for every query. This policy uses the
