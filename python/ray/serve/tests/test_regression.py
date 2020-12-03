@@ -1,7 +1,11 @@
 import numpy as np
 import requests
 
+import ray
+from ray.exceptions import GetTimeoutError
+import pytest
 from ray import serve
+from ray.test_utils import SignalActor
 
 
 def test_np_in_composed_model(serve_instance):
@@ -33,6 +37,31 @@ def test_np_in_composed_model(serve_instance):
     result = requests.get("http://127.0.0.1:8000/model")
     assert result.status_code == 200
     assert result.json() == 100.0
+
+
+def test_ref_in_handle_input(serve_instance):
+    client = serve_instance
+
+    unblock_worker_signal = SignalActor.remote()
+
+    def blocked_by_ref(serve_request):
+        assert not isinstance(serve_request.data, ray.ObjectRef)
+
+    client.create_backend("ref", blocked_by_ref)
+    client.create_endpoint("ref", backend="ref")
+    handle = client.get_handle("ref")
+
+    # Pass in a ref that's not ready yet
+    ref = unblock_worker_signal.wait.remote()
+    worker_result = handle.remote(ref)
+
+    # Worker shouldn't execute the request
+    with pytest.raises(GetTimeoutError):
+        ray.get(worker_result, timeout=1)
+
+    # Now unblock the worker
+    unblock_worker_signal.send.remote()
+    ray.get(worker_result)
 
 
 if __name__ == "__main__":
